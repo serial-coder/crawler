@@ -16,6 +16,7 @@ import (
 // Block contains all the necessary information about the blockchain block
 type Block struct {
 	Data       [][]byte
+	number     uint64
 	Signatures []BlockSignature
 	Metadata   [][]byte
 	txsFilter  []uint8
@@ -60,10 +61,15 @@ func FromFabricBlock(block *common.Block) (*Block, error) {
 
 	return &Block{
 		Data:       block.Data.Data,
+		number:     block.Header.Number,
 		Signatures: blockSignatures,
 		Metadata:   block.Metadata.Metadata,
 		txsFilter:  block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER],
 	}, nil
+}
+
+func (b *Block) Number() uint64 {
+	return b.number
 }
 
 func (b *Block) BlockSignatures() ([]BlockSignature, error) {
