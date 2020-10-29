@@ -47,6 +47,7 @@ type Crawler struct {
 	eventCli        map[string]*event.Client
 	channelProvider contextApi.ChannelProvider
 	notifiers       map[string]<-chan *fab.BlockEvent
+	registrations   map[string]fab.Registration
 	parser          parser.Parser
 }
 
@@ -132,14 +133,14 @@ func (c *Crawler) Listen(opts ...ListenOpt) error {
 		if err != nil {
 			return err
 		}
-		_, c.notifiers[ch], err = c.eventCli[ch].RegisterBlockEvent()
+		c.registrations[ch], c.notifiers[ch], err = c.eventCli[ch].RegisterBlockEvent()
 		return err
 	}
 	return err
 }
 
-func (c *Crawler) ListenerForChannel(ch string) <-chan *fab.BlockEvent {
-	return c.notifiers[ch]
+func (c *Crawler) ListenerForChannel(ch string) (<-chan *fab.BlockEvent, fab.Registration) {
+	return c.notifiers[ch], c.registrations[ch]
 }
 
 //func (c *Crawler) (){}
