@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 // This is needed for a smooth developer experience.
 //
 // This is what the initialization of the crawler might look like:
-//	if err := crawler.New("connection.yaml").Connect("User1", "Org1").Listen(crawler.FromBlock(), crawler.WithBlockNum(0)); err != nil {
+//	if err := crawler.New("connection.yaml").Connect("somechannel", "User1", "Org1").Listen(crawler.FromBlock(), crawler.WithBlockNum(0)); err != nil {
 //		fmt.Errorf(err.Error())
 //	}
 //
