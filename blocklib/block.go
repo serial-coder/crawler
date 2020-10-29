@@ -111,6 +111,13 @@ func (b *Block) Txs() ([]Tx, error) {
 	return txs, nil
 }
 
+// LastConfig returns last configuration block index for provided block.
+func (b *Block) LastConfig() (uint64, error) {
+	lastConfig := &common.LastConfig{}
+	err := proto.Unmarshal(b.Metadata[common.BlockMetadataIndex_LAST_CONFIG], lastConfig)
+	return lastConfig.Index, err
+}
+
 func GetTx(block *common.Block, txNumber int) *Tx {
 	txsFilter := TxValidationFlags(block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER])
 	var (

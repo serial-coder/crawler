@@ -98,3 +98,15 @@ func TestTxs(t *testing.T) {
 		}
 	})
 }
+
+func TestLastConfig(t *testing.T) {
+	file, err := ioutil.ReadFile("./mock/genesis.pb")
+	assert.NoError(t, err)
+
+	fabBlock := &common.Block{}
+	assert.NoError(t, proto.Unmarshal(file, fabBlock))
+
+	block, err := FromFabricBlock(fabBlock)
+	lastConfig, err := block.LastConfig()
+	assert.Equal(t, 0, lastConfig)
+}
