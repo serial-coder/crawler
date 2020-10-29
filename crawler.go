@@ -139,8 +139,24 @@ func (c *Crawler) Listen(opts ...ListenOpt) error {
 	return err
 }
 
-func (c *Crawler) ListenerForChannel(ch string) (<-chan *fab.BlockEvent, fab.Registration) {
-	return c.notifiers[ch], c.registrations[ch]
+func (c *Crawler) ListenerForChannel(channel string) <-chan *fab.BlockEvent {
+	return c.notifiers[channel]
+}
+
+// StopListenChannel removes the registration for block events from channel and closes the channel
+func (c *Crawler) StopListenChannel(channel string) {
+	for ch, eventcli := range c.eventCli {
+		if channel == ch {
+			eventcli.Unregister(c.registrations[ch])
+		}
+	}
+}
+
+// StopListenAll removes the registration for block events from all channels and closes these channels
+func (c *Crawler) StopListenAll(channel string) {
+	for ch, eventcli := range c.eventCli {
+		eventcli.Unregister(c.registrations[ch])
+	}
 }
 
 //func (c *Crawler) (){}
