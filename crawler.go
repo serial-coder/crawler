@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 // For connection to all channels from connection profile:
 //
 //		engine := crawler.New("connection.yaml", crawler.WithAutoConnect("User1", "Org1"))
-//		err = engine.Listen(crawler.FromBlock(), crawler.WithBlockNum(0))
+//		err := engine.Listen(crawler.FromBlock(), crawler.WithBlockNum(0))
 //		if err != nil {
 //			panic(err)
 //		}
@@ -53,16 +53,10 @@ type Crawler struct {
 
 // New creates Crawler instance from HLF connection profile and returns pointer to it.
 // "connectionProfile" is a path to HLF connection profile
-func New(connectionProfile string, opts ...Option) *Crawler {
-	go func() {
-		if r := recover(); r != nil {
-			logrus.Error("Recovered", r)
-		}
-	}()
-
+func New(connectionProfile string, opts ...Option) (*Crawler, error) {
 	sdk, err := fabsdk.New(config.FromFile(connectionProfile))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	crawl := &Crawler{
@@ -74,7 +68,7 @@ func New(connectionProfile string, opts ...Option) *Crawler {
 
 	for _, opt := range opts {
 		if err = opt(crawl); err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 
@@ -83,7 +77,7 @@ func New(connectionProfile string, opts ...Option) *Crawler {
 		crawl.parser = parser.New()
 	}
 
-	return crawl
+	return crawl, nil
 }
 
 // Connect connects crawler to channel 'ch' as identity specified in 'username' from organization with name 'org'
