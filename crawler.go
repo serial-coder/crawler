@@ -88,7 +88,8 @@ func (c *Crawler) Connect(ch, username, org string) *Crawler {
 	return c
 }
 
-// Listen starts blocks listener starting from block with num 'from'
+// Listen starts blocks listener starting from block with num 'from'.
+// All consumed blocks will be hadled by the provided parser (or default parser ParserImpl).
 func (c *Crawler) Listen(opts ...ListenOpt) error {
 	var (
 		err        error
@@ -136,6 +137,10 @@ func (c *Crawler) Listen(opts ...ListenOpt) error {
 		return err
 	}
 	return err
+}
+
+func (c *Crawler) ListenerForChannel(ch string) <-chan *fab.BlockEvent {
+	return c.notifiers[ch]
 }
 
 //func (c *Crawler) (){}
