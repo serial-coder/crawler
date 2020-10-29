@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Block contains all the necessary information about the blockchain block
 type Block struct {
 	Data       [][]byte
 	Signatures []BlockSignature
@@ -20,6 +21,7 @@ type Block struct {
 	txsFilter  []uint8
 }
 
+// BlockSignature contains nonce, cert, MSP ID and signature of the orderer which signed the block
 type BlockSignature struct {
 	Cert      []byte // pem-encoded
 	MSPID     string
@@ -27,6 +29,8 @@ type BlockSignature struct {
 	Nonce     []byte
 }
 
+// FromFabricBlock converts common.Block to blocklib.Block.
+// Such conversion is necessary for further comfortable work with information from the block.
 func FromFabricBlock(block *common.Block) (*Block, error) {
 	metadata := &common.Metadata{}
 	err := proto.Unmarshal(block.Metadata.Metadata[common.BlockMetadataIndex_SIGNATURES], metadata)
