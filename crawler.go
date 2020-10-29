@@ -37,7 +37,6 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/fab/events/deliverclient/seek"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/newity/crawler/parser"
-	"github.com/sirupsen/logrus"
 	"reflect"
 )
 
