@@ -153,7 +153,7 @@ func (c *Crawler) StopListenChannel(channel string) {
 }
 
 // StopListenAll removes the registration for block events from all channels and closes these channels
-func (c *Crawler) StopListenAll(channel string) {
+func (c *Crawler) StopListenAll() {
 	for ch, eventcli := range c.eventCli {
 		eventcli.Unregister(c.registrations[ch])
 	}
