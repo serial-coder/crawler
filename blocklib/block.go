@@ -62,7 +62,7 @@ func FromFabricBlock(block *common.Block) (*Block, error) {
 	}, nil
 }
 
-func (b *Block) GetBlockSignatures() ([]BlockSignature, error) {
+func (b *Block) BlockSignatures() ([]BlockSignature, error) {
 	metadata := &common.Metadata{}
 	err := proto.Unmarshal(b.Metadata[common.BlockMetadataIndex_SIGNATURES], metadata)
 	if err != nil {
@@ -91,7 +91,7 @@ func (b *Block) GetBlockSignatures() ([]BlockSignature, error) {
 	return blockSignatures, nil
 }
 
-func (b *Block) GetTxs() ([]Tx, error) {
+func (b *Block) Txs() ([]Tx, error) {
 	var (
 		validationCode   int32  = 255
 		validationStatus string = "INVALID_OTHER_REASON"

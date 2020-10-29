@@ -54,7 +54,7 @@ func readTxsFromBlock(pathToBlock string) ([]Tx, error) {
 		return nil, err
 	}
 
-	txs, err := block.GetTxs()
+	txs, err := block.Txs()
 	return txs, err
 }
 

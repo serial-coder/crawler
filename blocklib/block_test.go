@@ -30,7 +30,7 @@ func TestFromFabricBlock(t *testing.T) {
 	assert.NotNil(t, block.Signatures)
 }
 
-func TestGetBlockSignatures(t *testing.T) {
+func TestBlockSignatures(t *testing.T) {
 	file, err := ioutil.ReadFile("./mock/genesis.pb")
 	assert.NoError(t, err)
 
@@ -40,7 +40,7 @@ func TestGetBlockSignatures(t *testing.T) {
 	block, err := FromFabricBlock(fabBlock)
 	assert.NoError(t, err)
 
-	sigs, err := block.GetBlockSignatures()
+	sigs, err := block.BlockSignatures()
 	assert.NoError(t, err)
 
 	for _, sig := range sigs {
@@ -57,7 +57,7 @@ func TestGetBlockSignatures(t *testing.T) {
 	}
 }
 
-func TestGetTxs(t *testing.T) {
+func TestTxs(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
 		file, err := ioutil.ReadFile("./mock/sampleblock.pb")
 		assert.NoError(t, err)
@@ -68,7 +68,7 @@ func TestGetTxs(t *testing.T) {
 		block, err := FromFabricBlock(fabBlock)
 		assert.NoError(t, err)
 
-		txs, err := block.GetTxs()
+		txs, err := block.Txs()
 		assert.NoError(t, err)
 
 		for _, tx := range txs {
@@ -88,7 +88,7 @@ func TestGetTxs(t *testing.T) {
 		block, err := FromFabricBlock(fabBlock)
 		assert.NoError(t, err)
 
-		txs, err := block.GetTxs()
+		txs, err := block.Txs()
 		assert.NoError(t, err)
 
 		for _, tx := range txs {

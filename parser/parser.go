@@ -32,7 +32,7 @@ func (p *ParserImpl) Parse(block *common.Block) error {
 	if err != nil {
 		return err
 	}
-	txs, err := b.GetTxs()
+	txs, err := b.Txs()
 	if err != nil {
 		return err
 	}
