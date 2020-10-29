@@ -3,20 +3,29 @@ Copyright LLC Newity. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-// Please note, we don't return any errors from constructor (New()) or initialization funcs (Connect(...), Listen(...)).
-// This is needed for a smooth developer experience.
+// Crawler is a minimalistic blockchain (Hyperledger Fabric) parsing framework.
 //
 // This is what the initialization of the crawler might look like:
-//	if err := crawler.New("connection.yaml").Connect("somechannel", "User1", "Org1").Listen(crawler.FromBlock(), crawler.WithBlockNum(0)); err != nil {
-//		fmt.Errorf(err.Error())
-//	}
+//
+//		engine := crawler.New("connection.yaml")
+//		err := engine.Connect("fiat", "User1", "atomyze")
+//		if err != nil {
+//			panic(err)
+//		}
+//		err = engine.Listen(crawler.FromBlock(), crawler.WithBlockNum(0))
+//		if err != nil {
+//			panic(err)
+//		}
 //
 // For connection to all channels from connection profile:
-//	if err := crawler.New("connection.yaml", crawler.WithAutoConnect("User1", "Org1")).Listen(crawler.FromBlock(), crawler.WithBlockNum(0)); err != nil {
-//		fmt.Errorf(err.Error())
-//	}
 //
-// If something bad happens during initialization, the Crawler will panic and recover.
+//		engine := crawler.New("connection.yaml", crawler.WithAutoConnect("User1", "Org1"))
+//		err = engine.Listen(crawler.FromBlock(), crawler.WithBlockNum(0))
+//		if err != nil {
+//			panic(err)
+//		}
+//
+
 package crawler
 
 import (
@@ -78,14 +87,11 @@ func New(connectionProfile string, opts ...Option) *Crawler {
 }
 
 // Connect connects crawler to channel 'ch' as identity specified in 'username' from organization with name 'org'
-func (c *Crawler) Connect(ch, username, org string) *Crawler {
+func (c *Crawler) Connect(ch, username, org string) error {
 	var err error
 	c.channelProvider = c.sdk.ChannelContext(ch, fabsdk.WithUser(username), fabsdk.WithOrg(org))
 	c.chCli[ch], err = channel.New(c.channelProvider)
-	if err != nil {
-		panic(err)
-	}
-	return c
+	return err
 }
 
 // Listen starts blocks listener starting from block with num 'from'.
