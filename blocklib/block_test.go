@@ -100,7 +100,7 @@ func TestTxs(t *testing.T) {
 }
 
 func TestLastConfig(t *testing.T) {
-	file, err := ioutil.ReadFile("./mock/genesis.pb")
+	file, err := ioutil.ReadFile("./mock/sampleblock.pb")
 	assert.NoError(t, err)
 
 	fabBlock := &common.Block{}
@@ -108,5 +108,5 @@ func TestLastConfig(t *testing.T) {
 
 	block, err := FromFabricBlock(fabBlock)
 	lastConfig, err := block.LastConfig()
-	assert.Equal(t, 0, lastConfig)
+	assert.Equal(t, uint64(0), lastConfig)
 }
