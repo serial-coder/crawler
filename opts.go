@@ -32,7 +32,8 @@ func WithAutoConnect(username, org string) Option {
 
 			var err error
 			for ch, _ := range channelsMap {
-				crawler.chCli[ch], err = channel.New(crawler.sdk.ChannelContext(ch, fabsdk.WithUser(username), fabsdk.WithOrg(org)))
+				crawler.channelProvider = crawler.sdk.ChannelContext(ch, fabsdk.WithUser(username), fabsdk.WithOrg(org))
+				crawler.chCli[ch], err = channel.New(crawler.channelProvider)
 				return err
 			}
 		}
