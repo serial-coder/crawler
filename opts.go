@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"gitlab.n-t.io/atmz/crawler/parser"
+	"github.com/newity/crawler/parser"
 )
 
 type Option func(crawler *Crawler) error

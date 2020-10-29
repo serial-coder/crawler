@@ -1,4 +1,4 @@
-module gitlab.n-t.io/atmz/crawler
+module github.com/newity/crawler
 
 go 1.14
 

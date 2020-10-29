@@ -8,8 +8,8 @@ package parser
 import (
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/newity/crawler/blocklib"
 	"github.com/sirupsen/logrus"
-	"gitlab.n-t.io/atmz/crawler/blocklib"
 	"io/ioutil"
 	"strconv"
 )
