@@ -105,8 +105,7 @@ func (tx *Tx) ChaincodeId() (*peer.ChaincodeID, error) {
 // logical window of time. A proposal response is accepted by a peer only if
 // two conditions hold:
 // 1. the epoch specified in the message is the current epoch
-// 2. this message has been only seen once during this epoch (i.e. it hasn't
-//    been replayed)
+// 2. this message has been only seen once during this epoch (i.e. it hasn't been replayed)
 //
 // Always equals to 0 because of this reason: https://github.com/hyperledger/fabric/blob/release-2.1/core/common/validation/msgvalidation.go#L110
 func (tx *Tx) Epoch() (uint64, error) {
