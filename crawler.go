@@ -60,10 +60,11 @@ func New(connectionProfile string, opts ...Option) (*Crawler, error) {
 	}
 
 	crawl := &Crawler{
-		sdk:       sdk,
-		chCli:     make(map[string]*channel.Client),
-		eventCli:  make(map[string]*event.Client),
-		notifiers: make(map[string]<-chan *fab.BlockEvent),
+		sdk:           sdk,
+		chCli:         make(map[string]*channel.Client),
+		eventCli:      make(map[string]*event.Client),
+		notifiers:     make(map[string]<-chan *fab.BlockEvent),
+		registrations: make(map[string]fab.Registration),
 	}
 
 	for _, opt := range opts {
