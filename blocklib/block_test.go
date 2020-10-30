@@ -44,8 +44,7 @@ func TestBlockSignatures(t *testing.T) {
 	block, err := FromFabricBlock(fabBlock)
 	assert.NoError(t, err)
 
-	sigs, err := block.OrderersSignatures()
-	assert.NoError(t, err)
+	sigs := block.OrderersSignatures()
 
 	for _, sig := range sigs {
 		assert.Equal(t, uint64(12652116863344733010), binary.BigEndian.Uint64(sig.Nonce))

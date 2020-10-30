@@ -7,6 +7,7 @@ package blocklib
 
 import (
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
@@ -160,6 +161,6 @@ func TestGetActions(t *testing.T) {
 		creatorHash.Write(action.SignatureHeader.Creator)
 		assert.Equal(t, "51353a437c811a1ec7d4ffe061d1f38907ad443c5c1847b4877c4a65c5efa24e", hex.EncodeToString(payloadHash.Sum(nil)))
 		assert.Equal(t, "3b2106648e7b0773db03d160dbfef48a514f0871f8e18524a10a2de19fb21dd9", hex.EncodeToString(creatorHash.Sum(nil)))
-		assert.Equal(t, "2693c3593e74c1984b12aca0dcd625619bdbb59fe05abf76", hex.EncodeToString(action.SignatureHeader.Nonce))
+		assert.Equal(t, uint64(2779780183085072792), binary.BigEndian.Uint64(action.SignatureHeader.Nonce))
 	}
 }
