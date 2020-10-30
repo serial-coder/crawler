@@ -27,7 +27,7 @@ func TestFromFabricBlock(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, block.Data)
 	assert.NotNil(t, block.Metadata)
-	assert.NotNil(t, block.Signatures)
+	assert.NotNil(t, block.OrderersSignatures)
 }
 
 func TestBlockSignatures(t *testing.T) {
@@ -40,7 +40,7 @@ func TestBlockSignatures(t *testing.T) {
 	block, err := FromFabricBlock(fabBlock)
 	assert.NoError(t, err)
 
-	sigs, err := block.BlockSignatures()
+	sigs, err := block.OrderersSignatures()
 	assert.NoError(t, err)
 
 	for _, sig := range sigs {
