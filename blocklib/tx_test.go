@@ -111,6 +111,15 @@ func TestGetSignatureHeader(t *testing.T) {
 	assert.NotNil(t, signatureHeader)
 }
 
+func TestCreator(t *testing.T) {
+	mspid, cert, err := tx.Creator()
+	assert.NoError(t, err)
+	certHash := sha256.New()
+	certHash.Write(cert)
+	assert.Equal(t, "Org1MSP", mspid)
+	assert.Equal(t, "41202425b7c240ef2bfc3e9d48c457257b4d1fd5187a9943e3824be5c270f979", hex.EncodeToString(certHash.Sum(nil)))
+}
+
 func TestGetChaincodeId(t *testing.T) {
 	id, err := tx.ChaincodeId()
 	assert.NoError(t, err)
