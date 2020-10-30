@@ -16,12 +16,19 @@ import (
 	"testing"
 )
 
-func TestFromFabricBlock(t *testing.T) {
-	file, err := ioutil.ReadFile("./mock/genesis.pb")
-	assert.NoError(t, err)
-
+func getBlock(pathToBlock string) (*common.Block, error) {
+	file, err := ioutil.ReadFile(pathToBlock)
+	if err != nil {
+		return nil, err
+	}
 	fabBlock := &common.Block{}
-	assert.NoError(t, proto.Unmarshal(file, fabBlock))
+	err = proto.Unmarshal(file, fabBlock)
+	return fabBlock, err
+}
+
+func TestFromFabricBlock(t *testing.T) {
+	fabBlock, err := getBlock("./mock/genesis.pb")
+	assert.NoError(t, err)
 
 	block, err := FromFabricBlock(fabBlock)
 	assert.NoError(t, err)
@@ -31,11 +38,8 @@ func TestFromFabricBlock(t *testing.T) {
 }
 
 func TestBlockSignatures(t *testing.T) {
-	file, err := ioutil.ReadFile("./mock/genesis.pb")
+	fabBlock, err := getBlock("./mock/genesis.pb")
 	assert.NoError(t, err)
-
-	fabBlock := &common.Block{}
-	assert.NoError(t, proto.Unmarshal(file, fabBlock))
 
 	block, err := FromFabricBlock(fabBlock)
 	assert.NoError(t, err)
@@ -59,11 +63,8 @@ func TestBlockSignatures(t *testing.T) {
 
 func TestTxs(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
-		file, err := ioutil.ReadFile("./mock/sampleblock.pb")
+		fabBlock, err := getBlock("./mock/sampleblock.pb")
 		assert.NoError(t, err)
-
-		fabBlock := &common.Block{}
-		assert.NoError(t, proto.Unmarshal(file, fabBlock))
 
 		block, err := FromFabricBlock(fabBlock)
 		assert.NoError(t, err)
@@ -79,11 +80,8 @@ func TestTxs(t *testing.T) {
 	})
 
 	t.Run("with MVCC_READ_CONFLICT", func(t *testing.T) {
-		file, err := ioutil.ReadFile("./mock/mvcc_read_conflict.pb")
+		fabBlock, err := getBlock("./mock/mvcc_read_conflict.pb")
 		assert.NoError(t, err)
-
-		fabBlock := &common.Block{}
-		assert.NoError(t, proto.Unmarshal(file, fabBlock))
 
 		block, err := FromFabricBlock(fabBlock)
 		assert.NoError(t, err)
@@ -100,11 +98,8 @@ func TestTxs(t *testing.T) {
 }
 
 func TestLastConfig(t *testing.T) {
-	file, err := ioutil.ReadFile("./mock/sampleblock.pb")
+	fabBlock, err := getBlock("./mock/sampleblock.pb")
 	assert.NoError(t, err)
-
-	fabBlock := &common.Block{}
-	assert.NoError(t, proto.Unmarshal(file, fabBlock))
 
 	block, err := FromFabricBlock(fabBlock)
 	lastConfig, err := block.LastConfig()
