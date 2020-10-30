@@ -88,33 +88,8 @@ func (b *Block) Hash() []byte {
 }
 
 // OrderersSignatures returns signatures of orderers, their cert, MSP ID and nonce.
-func (b *Block) OrderersSignatures() ([]BlockSignature, error) {
-	metadata := &common.Metadata{}
-	err := proto.Unmarshal(b.Metadata[common.BlockMetadataIndex_SIGNATURES], metadata)
-	if err != nil {
-		return nil, errors.Wrapf(err, "error unmarshaling metadata from block at index [%s]", common.BlockMetadataIndex_SIGNATURES)
-	}
-
-	var blockSignatures []BlockSignature
-	for _, metadataSignature := range metadata.Signatures {
-		sigHdr := &common.SignatureHeader{}
-		if err := proto.Unmarshal(metadataSignature.SignatureHeader, sigHdr); err != nil {
-			return nil, errors.Wrap(err, "error unmarshaling SignatureHeader")
-		}
-		creator := &msp.SerializedIdentity{}
-		if err = proto.Unmarshal(sigHdr.Creator, creator); err != nil {
-			return nil, err
-		}
-		blockSignatures = append(blockSignatures,
-			BlockSignature{
-				Cert:      creator.IdBytes,
-				MSPID:     creator.Mspid,
-				Signature: metadataSignature.Signature,
-				Nonce:     sigHdr.Nonce,
-			},
-		)
-	}
-	return blockSignatures, nil
+func (b *Block) OrderersSignatures() []BlockSignature {
+	return b.signatures
 }
 
 func (b *Block) Txs() ([]Tx, error) {
