@@ -17,7 +17,9 @@ import (
 type Block struct {
 	Data       [][]byte
 	number     uint64
-	Signatures []BlockSignature
+	signatures []BlockSignature
+	prevhash   []byte
+	datahash   []byte
 	Metadata   [][]byte
 	txsFilter  []uint8
 }
@@ -62,17 +64,31 @@ func FromFabricBlock(block *common.Block) (*Block, error) {
 	return &Block{
 		Data:       block.Data.Data,
 		number:     block.Header.Number,
-		Signatures: blockSignatures,
+		signatures: blockSignatures,
 		Metadata:   block.Metadata.Metadata,
+		prevhash:   block.Header.PreviousHash,
+		datahash:   block.Header.DataHash,
 		txsFilter:  block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER],
 	}, nil
 }
 
+// Number returns a block number.
 func (b *Block) Number() uint64 {
 	return b.number
 }
 
-func (b *Block) BlockSignatures() ([]BlockSignature, error) {
+// PreviousHash returns hash of the previous block.
+func (b *Block) PreviousHash() []byte {
+	return b.prevhash
+}
+
+// Hash returns hash of the this block.
+func (b *Block) Hash() []byte {
+	return b.datahash
+}
+
+// OrderersSignatures returns signatures of orderers, their cert, MSP ID and nonce.
+func (b *Block) OrderersSignatures() ([]BlockSignature, error) {
 	metadata := &common.Metadata{}
 	err := proto.Unmarshal(b.Metadata[common.BlockMetadataIndex_SIGNATURES], metadata)
 	if err != nil {
