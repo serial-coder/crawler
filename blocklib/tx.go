@@ -9,6 +9,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/hyperledger/fabric-protos-go/msp"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"time"
 )
@@ -87,6 +88,17 @@ func (tx *Tx) SignatureHeader() (*common.SignatureHeader, error) {
 		return nil, err
 	}
 	return sighdr, nil
+}
+
+// Creator can be used to extract tx creator's MSP ID and PEM-encoded certificate.
+func (tx *Tx) Creator() (string, []byte, error) {
+	sighdr, err := tx.SignatureHeader()
+	if err != nil {
+		return "", nil, err
+	}
+	identity := &msp.SerializedIdentity{}
+	err = proto.Unmarshal(sighdr.Creator, identity)
+	return identity.Mspid, identity.IdBytes, err
 }
 
 // ChaincodeId returns peer.ChaincodeID (name, version and path) of the target chaincode.
