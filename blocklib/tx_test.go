@@ -68,7 +68,7 @@ func TestIsValid(t *testing.T) {
 	})
 }
 
-func TestGetValidationCode(t *testing.T) {
+func TestValidationCode(t *testing.T) {
 	t.Run("check code 0", func(t *testing.T) {
 		assert.Equal(t, int32(0), tx.ValidationCode())
 	})
@@ -77,7 +77,7 @@ func TestGetValidationCode(t *testing.T) {
 	})
 }
 
-func TestGetValidationStatus(t *testing.T) {
+func TestValidationStatus(t *testing.T) {
 	t.Run("check VALID status", func(t *testing.T) {
 		assert.Equal(t, "VALID", tx.ValidationStatus())
 	})
@@ -86,27 +86,27 @@ func TestGetValidationStatus(t *testing.T) {
 	})
 }
 
-func TestGetEnvelope(t *testing.T) {
+func TestEnvelope(t *testing.T) {
 	envelope, err := tx.Envelope()
 	assert.NoError(t, err)
 	assert.NotNil(t, envelope.Payload)
 	assert.NotNil(t, envelope.Signature)
 }
 
-func TestGetPayload(t *testing.T) {
+func TestPayload(t *testing.T) {
 	payload, err := tx.Payload()
 	assert.NoError(t, err)
 	assert.NotNil(t, payload.Header)
 	assert.NotNil(t, payload.Data)
 }
 
-func TestGetChannelHeader(t *testing.T) {
+func TestChannelHeader(t *testing.T) {
 	channelHeader, err := tx.ChannelHeader()
 	assert.NoError(t, err)
 	assert.NotNil(t, channelHeader)
 }
 
-func TestGetSignatureHeader(t *testing.T) {
+func TestSignatureHeader(t *testing.T) {
 	signatureHeader, err := tx.SignatureHeader()
 	assert.NoError(t, err)
 	assert.NotNil(t, signatureHeader)
@@ -121,13 +121,13 @@ func TestCreator(t *testing.T) {
 	assert.Equal(t, "41202425b7c240ef2bfc3e9d48c457257b4d1fd5187a9943e3824be5c270f979", hex.EncodeToString(certHash.Sum(nil)))
 }
 
-func TestGetChaincodeId(t *testing.T) {
+func TestChaincodeId(t *testing.T) {
 	id, err := tx.ChaincodeId()
 	assert.NoError(t, err)
 	assert.Equal(t, "fabcar", id.Name)
 }
 
-func TestGetEpoch(t *testing.T) {
+func TestEpoch(t *testing.T) {
 	epoch, err := tx.Epoch()
 	assert.NoError(t, err)
 	assert.Equal(t, uint64(0), epoch)
@@ -139,19 +139,19 @@ func TestTimestamp(t *testing.T) {
 	assert.Equal(t, int64(1603659829097237404), timestamp.UnixNano())
 }
 
-func TestGetTxId(t *testing.T) {
+func TestTxId(t *testing.T) {
 	txid, err := tx.TxId()
 	assert.NoError(t, err)
 	assert.Equal(t, "23e7c409b6849a71e6b5d7767a4e6c7efcd4bafba02b932ca5e6559e4d050dea", txid)
 }
 
-func TestGetPeerTransaction(t *testing.T) {
+func TestPeerTransaction(t *testing.T) {
 	peerTransaction, err := tx.PeerTransaction()
 	assert.NoError(t, err)
 	assert.NotNil(t, peerTransaction.Actions)
 }
 
-func TestGetActions(t *testing.T) {
+func TestActions(t *testing.T) {
 	actions, err := tx.Actions()
 	assert.NoError(t, err)
 	for _, action := range actions {
