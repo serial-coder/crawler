@@ -8,6 +8,7 @@ package parser
 import (
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/newity/crawler/blocklib"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -21,22 +22,28 @@ func New() *ParserImpl {
 	return &ParserImpl{}
 }
 
-func (p *ParserImpl) Parse(block *common.Block) error {
+func (p *ParserImpl) Parse(block *common.Block) (*Data, error) {
 	blockBytes, err := proto.Marshal(block)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	ioutil.WriteFile(strconv.Itoa(int(block.Header.Number)), blockBytes, 0644)
 
 	b, err := blocklib.FromFabricBlock(block)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	txs, err := b.Txs()
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	var (
+		selectedTransactions []blocklib.Tx
+		selectedEvents       []*peer.ChaincodeEvent
+	)
 	for _, tx := range txs {
+		selectedTransactions = append(selectedTransactions, tx)
 		chdr, err := tx.ChannelHeader()
 		if err != nil {
 			logrus.Errorf("tx parser error: %s", err)
@@ -51,40 +58,45 @@ func (p *ParserImpl) Parse(block *common.Block) error {
 				continue
 			}
 			for _, action := range actions {
-
-				ccActionPayload := action.ChaincodeActionPayload()
-				if ccActionPayload.Action == nil || ccActionPayload.Action.ProposalResponsePayload == nil {
-					logrus.Debug("no payload in ChaincodeActionPayload")
-					continue
-				}
-
-				ccAction, err := action.ChaincodeAction()
-				if err != nil {
-					logrus.Errorf("failed to get to ChaincodeAction: %s", err)
-					continue
-				}
-				_ = ccAction
-				rwsets, err := action.RWSets()
-				if err != nil {
-					logrus.Errorf("failed to extract rwsets: %+v", err)
-					continue
-				}
-
-				for _, rw := range rwsets {
-					for _, write := range rw.KVRWSet.Writes {
-						_ = write
-					}
-				}
+				//ccActionPayload := action.ChaincodeActionPayload()
+				//if ccActionPayload.Action == nil || ccActionPayload.Action.ProposalResponsePayload == nil {
+				//	logrus.Debug("no payload in ChaincodeActionPayload")
+				//	continue
+				//}
+				//
+				//ccAction, err := action.ChaincodeAction()
+				//if err != nil {
+				//	logrus.Errorf("failed to get to ChaincodeAction: %s", err)
+				//	continue
+				//}
+				//_ = ccAction
+				//rwsets, err := action.RWSets()
+				//if err != nil {
+				//	logrus.Errorf("failed to extract rwsets: %+v", err)
+				//	continue
+				//}
+				//
+				//for _, rw := range rwsets {
+				//	for _, write := range rw.KVRWSet.Writes {
+				//		_ = write
+				//	}
+				//}
 
 				ccEvent, err := action.ChaincodeEvent()
 				if err != nil {
 					logrus.Errorf("failed to extract chaincode events: %s", err)
 					continue
 				}
-				_ = ccEvent
-
+				selectedEvents = append(selectedEvents, ccEvent)
 			}
 		}
 	}
-	return nil
+	return &Data{
+		BlockNumber:     block.Header.Number,
+		Prevhash:        block.Header.PreviousHash,
+		Datahash:        block.Header.DataHash,
+		BlockSignatures: b.OrderersSignatures(),
+		Txs:             selectedTransactions,
+		Events:          selectedEvents,
+	}, nil
 }
