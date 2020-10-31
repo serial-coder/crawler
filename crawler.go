@@ -36,6 +36,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fab/events/deliverclient/seek"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	"github.com/newity/crawler/injector"
 	"github.com/newity/crawler/parser"
 	"github.com/newity/crawler/storage"
 	"github.com/sirupsen/logrus"
@@ -54,6 +55,7 @@ type Crawler struct {
 	notifiers       map[string]<-chan *fab.BlockEvent
 	registrations   map[string]fab.Registration
 	parser          parser.Parser
+	injector        injector.Injector
 	storage         storage.Storage
 }
 
@@ -84,6 +86,7 @@ func New(connectionProfile string, opts ...Option) (*Crawler, error) {
 		crawl.parser = parser.New()
 	}
 
+	// if no storage is specified, use the default storage Badger
 	if crawl.storage == nil {
 		home := os.Getenv("HOME")
 		stor, err := storage.NewBadger(path.Join(home, ".crawler-storage"))
@@ -91,6 +94,11 @@ func New(connectionProfile string, opts ...Option) (*Crawler, error) {
 			return nil, err
 		}
 		crawl.storage = stor
+	}
+
+	// if no injector is specified, use the default injector SimpleInjector
+	if crawl.injector == nil {
+		crawl.injector = injector.NewSimpleInjector(crawl.storage)
 	}
 
 	return crawl, nil
@@ -182,7 +190,7 @@ func (c *Crawler) Run() {
 			if err != nil {
 				logrus.Error(err)
 			}
-			if err = c.storage.Put(data); err != nil {
+			if err = c.injector.Inject(data); err != nil {
 				logrus.Error(err)
 			}
 		}
