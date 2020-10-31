@@ -6,13 +6,10 @@ SPDX-License-Identifier: Apache-2.0
 package parser
 
 import (
-	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/newity/crawler/blocklib"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
-	"strconv"
 )
 
 type ParserImpl struct {
@@ -23,12 +20,6 @@ func New() *ParserImpl {
 }
 
 func (p *ParserImpl) Parse(block *common.Block) (*Data, error) {
-	blockBytes, err := proto.Marshal(block)
-	if err != nil {
-		return nil, err
-	}
-	ioutil.WriteFile(strconv.Itoa(int(block.Header.Number)), blockBytes, 0644)
-
 	b, err := blocklib.FromFabricBlock(block)
 	if err != nil {
 		return nil, err
