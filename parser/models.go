@@ -6,7 +6,9 @@ import (
 )
 
 type Data struct {
-	Block           blocklib.Block
+	BlockNumber     uint64
+	Prevhash        []byte
+	Datahash        []byte
 	BlockSignatures []blocklib.BlockSignature
 	Txs             []blocklib.Tx
 	Events          []*peer.ChaincodeEvent
