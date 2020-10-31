@@ -9,7 +9,10 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/newity/crawler"
+	"github.com/newity/crawler/storage"
 	"github.com/sirupsen/logrus"
+	"os"
+	"path"
 	"time"
 )
 
@@ -20,7 +23,13 @@ const (
 )
 
 func main() {
-	engine, err := crawler.New("connection.yaml", crawler.WithAutoConnect(USER, ORG))
+	home := os.Getenv("HOME")
+	stor, err := storage.NewBadger(path.Join(home, ".crawler-storage"))
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	engine, err := crawler.New("connection.yaml", crawler.WithAutoConnect(USER, ORG), crawler.WithStorage(stor))
 	if err != nil {
 		logrus.Error(err)
 	}
