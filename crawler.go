@@ -39,6 +39,8 @@ import (
 	"github.com/newity/crawler/parser"
 	"github.com/newity/crawler/storage"
 	"github.com/sirupsen/logrus"
+	"os"
+	"path"
 	"reflect"
 	"strconv"
 )
@@ -83,7 +85,8 @@ func New(connectionProfile string, opts ...Option) (*Crawler, error) {
 	}
 
 	if crawl.storage == nil {
-		stor, err := storage.NewBadger("/var/crawler-storage")
+		home := os.Getenv("HOME")
+		stor, err := storage.NewBadger(path.Join(home, ".crawler-storage"))
 		if err != nil {
 			return nil, err
 		}
