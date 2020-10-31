@@ -37,7 +37,10 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/fab/events/deliverclient/seek"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/newity/crawler/parser"
+	"github.com/newity/crawler/storage"
+	"github.com/sirupsen/logrus"
 	"reflect"
+	"strconv"
 )
 
 // Crawler is responsible for fetching info from blockchain
@@ -49,6 +52,7 @@ type Crawler struct {
 	notifiers       map[string]<-chan *fab.BlockEvent
 	registrations   map[string]fab.Registration
 	parser          parser.Parser
+	storage         storage.Storage
 }
 
 // New creates Crawler instance from HLF connection profile and returns pointer to it.
@@ -76,6 +80,14 @@ func New(connectionProfile string, opts ...Option) (*Crawler, error) {
 	// if no parser is specified, use the default parser ParserImpl
 	if crawl.parser == nil {
 		crawl.parser = parser.New()
+	}
+
+	if crawl.storage == nil {
+		stor, err := storage.NewBadger("/var/crawler-storage")
+		if err != nil {
+			return nil, err
+		}
+		crawl.storage = stor
 	}
 
 	return crawl, nil
@@ -160,10 +172,20 @@ func (c *Crawler) StopListenAll() {
 	}
 }
 
-//func (c *Crawler) (){}
-//func (c *Crawler) (){}
-//func (c *Crawler) (){}
-//func (c *Crawler) (){}
-//func (c *Crawler) (){}
-//func (c *Crawler) (){}
-//func (c *Crawler) (){}
+func (c *Crawler) Run() {
+	for _, notifier := range c.notifiers {
+		for blockevent := range notifier {
+			data, err := c.parser.Parse(blockevent.Block)
+			if err != nil {
+				logrus.Error(err)
+			}
+			if err = c.storage.Put(data); err != nil {
+				logrus.Error(err)
+			}
+		}
+	}
+}
+
+func (c *Crawler) GetBlock(blocknum int) (*parser.Data, error) {
+	return c.storage.Get(strconv.Itoa(blocknum))
+}
