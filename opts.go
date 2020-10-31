@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	"github.com/newity/crawler/injector"
 	"github.com/newity/crawler/parser"
 	"github.com/newity/crawler/storage"
 )
@@ -51,11 +52,20 @@ func WithParser(p parser.Parser) Option {
 	}
 }
 
-// WithStorage injects a specific storage that satisfies the Storage interface to the Crawler instance.
+// WithStorage adds a specific storage that satisfies the Storage interface to the Crawler instance.
 // If no storage is specified, the default storage Badger (BadgerDB) will be used.
 func WithStorage(s storage.Storage) Option {
 	return func(crawler *Crawler) error {
 		crawler.storage = s
+		return nil
+	}
+}
+
+// WithInjector adds injector that satisfies the Injector interface to the Crawler instance.
+// If no injector is specified, the default injector SimpleInjector will be used.
+func WithInjector(i injector.Injector) Option {
+	return func(crawler *Crawler) error {
+		crawler.injector = i
 		return nil
 	}
 }
