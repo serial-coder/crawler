@@ -1,3 +1,8 @@
+/*
+Copyright LLC Newity. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package storage
 
 import "github.com/newity/crawler/parser"
