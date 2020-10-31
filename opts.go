@@ -10,6 +10,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/newity/crawler/parser"
+	"github.com/newity/crawler/storage"
 )
 
 type Option func(crawler *Crawler) error
@@ -46,6 +47,15 @@ func WithAutoConnect(username, org string) Option {
 func WithParser(p parser.Parser) Option {
 	return func(crawler *Crawler) error {
 		crawler.parser = p
+		return nil
+	}
+}
+
+// WithStorage injects a specific storage that satisfies the Storage interface to the Crawler instance.
+// If no storage is specified, the default storage Badger (BadgerDB) will be used.
+func WithStorage(s storage.Storage) Option {
+	return func(crawler *Crawler) error {
+		crawler.storage = s
 		return nil
 	}
 }
