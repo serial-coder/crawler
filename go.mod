@@ -3,6 +3,7 @@ module github.com/newity/crawler
 go 1.14
 
 require (
+	github.com/dgraph-io/badger/v2 v2.2007.2
 	github.com/gogo/protobuf v1.1.1
 	github.com/golang/protobuf v1.3.3
 	github.com/hyperledger/fabric-protos-go v0.0.0-20200707132912-fee30f3ccd23
