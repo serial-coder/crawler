@@ -36,7 +36,7 @@ func (b *Badger) InitChannelStorage(channel string) error {
 // Put saves value by key
 func (b *Badger) Put(key string, value []byte) error {
 	return b.db.Update(func(txn *badger.Txn) error {
-		return txn.Set([]byte(strconv.Itoa(int(data.BlockNumber))), encoded)
+		return txn.Set([]byte(key), value)
 	})
 }
 
