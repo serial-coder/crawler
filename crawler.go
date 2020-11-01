@@ -183,6 +183,9 @@ func (c *Crawler) StopListenAll() {
 	}
 }
 
+// Run starts parsing blocks and saves them to storage.
+// The parsing strategy is determined by the implementation of the parser.
+// What and in what form will be stored in the storage is determined by the injector implementation.
 func (c *Crawler) Run() {
 	for _, notifier := range c.notifiers {
 		for blockevent := range notifier {
@@ -197,6 +200,7 @@ func (c *Crawler) Run() {
 	}
 }
 
+// GetBlock retrieves specified block from a storage and returns it in the form of parser.Data.
 func (c *Crawler) GetBlock(blocknum int) (*parser.Data, error) {
 	return c.storage.Get(strconv.Itoa(blocknum))
 }
