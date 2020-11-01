@@ -4,7 +4,8 @@ Crawler docs: https://godoc.org/github.com/newity/crawler
 
 Blocklib docs: https://godoc.org/github.com/newity/crawler/blocklib
 
-**Crawler** is a framework for parsing Hyperledger Fabric blockchain. You can implement any parser or storage adapter or use default implementations. 
+#### Crawler 
+Crawler is a framework for parsing Hyperledger Fabric blockchain. You can implement any parser or storage adapter or use default implementations. 
 
 This is how it looks like:
 
@@ -32,9 +33,17 @@ This is how it looks like:
 
 And that's all!
 
-**Parser** is responsible for processing data from the blockchain. Simply put, this is about how exactly and into what constituent parts we will disassemble the blocks. You can find default implementation in https://github.com/newity/crawler/tree/master/parser/parser.go. Default parser just packs all txs with type ENDORSER_TRANSACTION and all events into [parser.Data](https://github.com/newity/crawler/blob/master/parser/models.go#L13) format. 
+Here are the main parts of a crawler:
 
-**StorageAdapter** is used for implementation specific logic of saving parsed data into the storage. Default implementation 
+- **Storage** is responsible for saving data fetched from blockchain. Default is BadgerDB. 
+
+- **Parser** is responsible for processing data from the blockchain. Simply put, this is about how exactly and into what constituent parts we will disassemble the blocks. You can find default implementation in https://github.com/newity/crawler/tree/master/parser/parser.go. Default parser just packs all txs with type ENDORSER_TRANSACTION and all events into [parser.Data](https://github.com/newity/crawler/blob/master/parser/models.go#L13) format. 
+
+- **StorageAdapter** is used for implementation specific logic of saving parsed data into the storage. Default implementation saves gob-serialized parser.Data with block number as the key and retrieves parser.Data by block number specified.
+
+_You can replace any of these components with your own implementation._
+
+**Crawler**  uses [Blocklib](https://godoc.org/github.com/newity/crawler/blocklib) under the hood. You can use it too for your own parsing needs. 
 
 Examples: 
 
@@ -42,4 +51,3 @@ Examples:
 - find actual configuration blocks for each block in the network: https://github.com/newity/crawler/tree/master/examples/readlastconfig
 - run crawler with BadgerDB storage and retrieve specific block from storage: https://github.com/newity/crawler/tree/master/examples/saveblocksandread
 
-More docs will be available soon.
