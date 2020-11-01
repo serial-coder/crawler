@@ -16,7 +16,7 @@ This is how it looks like:
     }
     
     // create Crawler instance with connection to all Fabric channels specified in connection profile (crawler.WithAutoConnect(USER, ORG)),
-    // using BadgerDB storage (crawler.WithStorage(stor)) and with default storage adapter crawler.WithStorageAdapter(adapter.NewSimpleAdapter(stor))
+    // using BadgerDB storage (crawler.WithStorage(stor)) and with default storage adapter (crawler.WithStorageAdapter(adapter.NewSimpleAdapter(stor)))
     engine, err := crawler.New("connection.yaml", crawler.WithAutoConnect(USER, ORG), crawler.WithStorage(stor), crawler.WithStorageAdapter(adapter.NewSimpleAdapter(stor)))
 	if err != nil {
 		logrus.Error(err)
