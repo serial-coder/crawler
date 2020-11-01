@@ -9,8 +9,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/newity/crawler"
-	"github.com/newity/crawler/injector"
 	"github.com/newity/crawler/storage"
+	"github.com/newity/crawler/storageadapter"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path"
@@ -30,7 +30,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	engine, err := crawler.New("connection.yaml", crawler.WithAutoConnect(USER, ORG), crawler.WithStorage(stor), crawler.WithInjector(injector.NewSimpleInjector(stor)))
+	engine, err := crawler.New("connection.yaml", crawler.WithAutoConnect(USER, ORG), crawler.WithStorage(stor), crawler.WithStorageAdapter(storageadapter.NewSimpleAdapter(stor)))
 	if err != nil {
 		logrus.Error(err)
 	}

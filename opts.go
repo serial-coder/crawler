@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"github.com/newity/crawler/injector"
 	"github.com/newity/crawler/parser"
 	"github.com/newity/crawler/storage"
+	"github.com/newity/crawler/storageadapter"
 )
 
 type Option func(crawler *Crawler) error
@@ -61,11 +61,11 @@ func WithStorage(s storage.Storage) Option {
 	}
 }
 
-// WithInjector adds injector that satisfies the Injector interface to the Crawler instance.
-// If no injector is specified, the default injector SimpleInjector will be used.
-func WithInjector(i injector.Injector) Option {
+// WithStorageAdapter adds storage adapter that satisfies the StorageAdapter interface to the Crawler instance.
+// If no storage adapter is specified, the default SimpleAdapter will be used.
+func WithStorageAdapter(a storageadapter.StorageAdapter) Option {
 	return func(crawler *Crawler) error {
-		crawler.injector = i
+		crawler.adapter = a
 		return nil
 	}
 }

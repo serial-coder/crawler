@@ -36,14 +36,13 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fab/events/deliverclient/seek"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"github.com/newity/crawler/injector"
 	"github.com/newity/crawler/parser"
 	"github.com/newity/crawler/storage"
+	"github.com/newity/crawler/storageadapter"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path"
 	"reflect"
-	"strconv"
 )
 
 // Crawler is responsible for fetching info from blockchain
@@ -55,7 +54,7 @@ type Crawler struct {
 	notifiers       map[string]<-chan *fab.BlockEvent
 	registrations   map[string]fab.Registration
 	parser          parser.Parser
-	injector        injector.Injector
+	adapter         storageadapter.StorageAdapter
 	storage         storage.Storage
 }
 
@@ -96,9 +95,9 @@ func New(connectionProfile string, opts ...Option) (*Crawler, error) {
 		crawl.storage = stor
 	}
 
-	// if no injector is specified, use the default injector SimpleInjector
-	if crawl.injector == nil {
-		crawl.injector = injector.NewSimpleInjector(crawl.storage)
+	// if no storage adapter is specified, use the default SimpleAdapter
+	if crawl.adapter == nil {
+		crawl.adapter = storageadapter.NewSimpleAdapter(crawl.storage)
 	}
 
 	return crawl, nil
@@ -185,7 +184,7 @@ func (c *Crawler) StopListenAll() {
 
 // Run starts parsing blocks and saves them to storage.
 // The parsing strategy is determined by the implementation of the parser.
-// What and in what form will be stored in the storage is determined by the injector implementation.
+// What and in what form will be stored in the storage is determined by the storage adapter implementation.
 func (c *Crawler) Run() {
 	for _, notifier := range c.notifiers {
 		for blockevent := range notifier {
@@ -193,7 +192,7 @@ func (c *Crawler) Run() {
 			if err != nil {
 				logrus.Error(err)
 			}
-			if err = c.injector.Inject(data); err != nil {
+			if err = c.adapter.Inject(data); err != nil {
 				logrus.Error(err)
 			}
 		}
@@ -202,5 +201,5 @@ func (c *Crawler) Run() {
 
 // GetBlock retrieves specified block from a storage and returns it in the form of parser.Data.
 func (c *Crawler) GetBlock(blocknum int) (*parser.Data, error) {
-	return c.storage.Get(strconv.Itoa(blocknum))
+	return c.adapter.Retrieve(blocknum)
 }
