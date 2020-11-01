@@ -6,10 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package storage
 
 import (
-	"bytes"
-	"encoding/gob"
 	badger "github.com/dgraph-io/badger/v2"
-	"github.com/newity/crawler/parser"
 	"os"
 	"strconv"
 	"strings"
