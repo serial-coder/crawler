@@ -5,7 +5,7 @@ Crawler docs: https://godoc.org/github.com/newity/crawler
 Blocklib docs: https://godoc.org/github.com/newity/crawler/blocklib
 
 #### Crawler 
-Crawler is a framework for parsing Hyperledger Fabric blockchain. You can implement any parser or storage adapter or use default implementations. 
+Crawler is a framework for parsing Hyperledger Fabric blockchain. You can implement any storage, parser or storage adapter or use default implementations. 
 
 This is how it looks like:
 
