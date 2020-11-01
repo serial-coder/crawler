@@ -18,9 +18,9 @@ import (
 )
 
 const (
-	CHANNEL = "cc"
+	CHANNEL = "mychannel"
 	USER    = "User1"
-	ORG     = "atomyze"
+	ORG     = "Org1"
 )
 
 func main() {
