@@ -22,8 +22,8 @@ func (s *SimpleAdapter) Inject(data *parser.Data) error {
 	return s.storage.Put(strconv.Itoa(int(data.BlockNumber)), encoded)
 }
 
-func (s *SimpleAdapter) Retrieve(blocknum int) (*parser.Data, error) {
-	value, err := s.storage.Get(strconv.Itoa(blocknum))
+func (s *SimpleAdapter) Retrieve(blocknum string) (*parser.Data, error) {
+	value, err := s.storage.Get(blocknum)
 	if err != nil {
 		return nil, err
 	}
