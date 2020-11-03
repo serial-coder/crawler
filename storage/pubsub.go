@@ -21,7 +21,11 @@ func NewPubSub(project string, opts ...option.ClientOption) (*PubSub, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &PubSub{client: client}, nil
+	return &PubSub{
+		client:        client,
+		topics:        make(map[string]*pubsub.Topic),
+		subscriptions: make(map[string]*pubsub.Subscription),
+	}, nil
 }
 
 func (p *PubSub) InitChannelsStorage(channels []string) error {
