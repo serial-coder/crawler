@@ -14,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"os"
 	"path"
+	"strconv"
 	"time"
 )
 
@@ -50,7 +51,7 @@ func main() {
 }
 
 func readBlock(engine *crawler.Crawler, num int) {
-	data, err := engine.GetBlock(num)
+	data, err := engine.GetFromStorage(strconv.Itoa(num))
 	if err != nil {
 		logrus.Error(err)
 	}

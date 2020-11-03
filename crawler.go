@@ -199,7 +199,7 @@ func (c *Crawler) Run() {
 	}
 }
 
-// GetBlock retrieves specified block from a storage and returns it in the form of parser.Data.
-func (c *Crawler) GetBlock(blocknum int) (*parser.Data, error) {
-	return c.adapter.Retrieve(blocknum)
+// GetBlock retrieves specified data from a storage by specified key and returns it in the form of parser.Data.
+func (c *Crawler) GetFromStorage(key string) (*parser.Data, error) {
+	return c.adapter.Retrieve(key)
 }
