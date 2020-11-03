@@ -4,6 +4,7 @@ package storage
 import (
 	"cloud.google.com/go/pubsub"
 	"context"
+	"errors"
 	"google.golang.org/api/option"
 	"time"
 )
@@ -29,13 +30,15 @@ func NewPubSub(project string, opts ...option.ClientOption) (*PubSub, error) {
 }
 
 func (p *PubSub) InitChannelsStorage(channels []string) error {
-	var err error
 	p.ctx = context.Background()
-
 	for _, channel := range channels {
 		var topic *pubsub.Topic
 		topic = p.client.Topic(channel)
-		if topic == nil {
+		topicExists, err := topic.Exists(p.ctx)
+		if err != nil {
+			return err
+		}
+		if !topicExists {
 			topic, err = p.client.CreateTopic(p.ctx, channel)
 			if err != nil {
 				return err
@@ -47,7 +50,8 @@ func (p *PubSub) InitChannelsStorage(channels []string) error {
 
 		var sub *pubsub.Subscription
 		sub = p.client.Subscription(channel)
-		if sub == nil {
+		subExists, err := sub.Exists(p.ctx)
+		if !subExists {
 			sub, err = p.client.CreateSubscription(p.ctx, channel, pubsub.SubscriptionConfig{
 				Topic:                 topic,
 				AckDeadline:           10 * time.Second,
@@ -77,15 +81,26 @@ func (p *PubSub) Put(topic string, msg []byte) error {
 
 // Get reads message from topic.
 func (p *PubSub) Get(topic string) ([]byte, error) {
-	var data []byte
-	err := p.subscriptions[topic].Receive(p.ctx, func(ctx context.Context, m *pubsub.Message) {
-		copy(data, m.Data)
-		m.Ack()
-	})
-	if err != context.Canceled {
+	var err error
+	ctx, cancel := context.WithCancel(context.Background())
+	ch, errch := make(chan []byte), make(chan error)
+	go func(ch chan []byte, errch chan error) {
+		err = p.subscriptions[topic].Receive(ctx, func(ctx context.Context, m *pubsub.Message) {
+			ch <- m.Data
+			m.Ack()
+		})
+		if !errors.As(err, &context.Canceled) {
+			errch <- err
+		}
+	}(ch, errch)
+
+	select {
+	case data := <-ch:
+		cancel()
+		return data, nil
+	case err = <-errch:
 		return nil, err
 	}
-	return data, nil
 }
 
 // Detele deletes topic and subscription specified by key.
