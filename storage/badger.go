@@ -16,7 +16,7 @@ type Badger struct {
 	db *badger.DB
 }
 
-func NewBadger(path string) (Storage, error) {
+func NewBadger(path string) (*Badger, error) {
 	db, err := badger.Open(badger.DefaultOptions(path))
 	if err != nil {
 		if strings.Contains(err.Error(), "Another process is using this Badger database") {
