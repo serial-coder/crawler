@@ -15,6 +15,7 @@ type Data struct {
 	Prevhash        []byte
 	Datahash        []byte
 	BlockSignatures []blocklib.BlockSignature
+	Channel         string
 	Txs             []blocklib.Tx
 	Events          []*peer.ChaincodeEvent
 }

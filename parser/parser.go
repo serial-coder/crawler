@@ -33,6 +33,7 @@ func (p *ParserImpl) Parse(block *common.Block) (*Data, error) {
 		selectedTransactions []blocklib.Tx
 		selectedEvents       []*peer.ChaincodeEvent
 	)
+
 	for _, tx := range txs {
 		selectedTransactions = append(selectedTransactions, tx)
 		chdr, err := tx.ChannelHeader()
@@ -82,11 +83,18 @@ func (p *ParserImpl) Parse(block *common.Block) (*Data, error) {
 			}
 		}
 	}
+
+	header, err := txs[0].ChannelHeader()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Data{
 		BlockNumber:     block.Header.Number,
 		Prevhash:        block.Header.PreviousHash,
 		Datahash:        block.Header.DataHash,
 		BlockSignatures: b.OrderersSignatures(),
+		Channel:         header.ChannelId,
 		Txs:             selectedTransactions,
 		Events:          selectedEvents,
 	}, nil
