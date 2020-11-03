@@ -29,7 +29,7 @@ func NewBadger(path string) (Storage, error) {
 	return &Badger{db}, nil
 }
 
-func (b *Badger) InitChannelStorage(channel string) error {
+func (b *Badger) InitChannelsStorage(channels []string) error {
 	return nil
 }
 
