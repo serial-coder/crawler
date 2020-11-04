@@ -55,7 +55,7 @@ func (p *PubSub) InitChannelsStorage(channels []string) error {
 			sub, err = p.client.CreateSubscription(p.ctx, channel, pubsub.SubscriptionConfig{
 				Topic:                 topic,
 				AckDeadline:           10 * time.Second,
-				ExpirationPolicy:      25 * time.Hour,
+				ExpirationPolicy:      720 * time.Hour,
 				EnableMessageOrdering: true,
 			})
 			if err != nil {
