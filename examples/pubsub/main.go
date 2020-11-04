@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/newity/crawler"
+	"github.com/newity/crawler/parser"
 	"github.com/newity/crawler/storage"
 	"github.com/newity/crawler/storageadapter"
 	"github.com/sirupsen/logrus"
@@ -58,28 +59,35 @@ func main() {
 }
 
 func readFromQueue(engine *crawler.Crawler, topic string) {
-	data, err := engine.GetFromStorage(topic)
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	logrus.Infof("block %d with hash %s and prebious hash %s\n\nOrderers signed:\n", data.BlockNumber,
-		hex.EncodeToString(data.Datahash),
-		hex.EncodeToString(data.Prevhash))
-	for _, signature := range data.BlockSignatures {
-		fmt.Printf("MSP ID: %s\nSignature: %s\nCertificate:\n%s\n", signature.MSPID, hex.EncodeToString(signature.Signature), string(signature.Cert))
-	}
-	fmt.Println("Transactions")
-	for _, tx := range data.Txs {
-		t, err := tx.Timestamp()
-		if err != nil {
-			logrus.Error(err)
-		}
-		txid, err := tx.TxId()
+	var (
+		err  error
+		data *parser.Data
+	)
+	for err == nil {
+		engine.
+			data, err = engine.GetFromStorage(topic)
 		if err != nil {
 			logrus.Error(err)
 		}
 
-		fmt.Printf("Tx ID: %s\nCreation time: %s\n", txid, t.String())
+		logrus.Infof("block %d with hash %s and prebious hash %s\n\nOrderers signed:\n", data.BlockNumber,
+			hex.EncodeToString(data.Datahash),
+			hex.EncodeToString(data.Prevhash))
+		for _, signature := range data.BlockSignatures {
+			fmt.Printf("MSP ID: %s\nSignature: %s\nCertificate:\n%s\n", signature.MSPID, hex.EncodeToString(signature.Signature), string(signature.Cert))
+		}
+		fmt.Println("Transactions")
+		for _, tx := range data.Txs {
+			t, err := tx.Timestamp()
+			if err != nil {
+				logrus.Error(err)
+			}
+			txid, err := tx.TxId()
+			if err != nil {
+				logrus.Error(err)
+			}
+
+			fmt.Printf("Tx ID: %s\nCreation time: %s\n", txid, t.String())
+		}
 	}
 }
