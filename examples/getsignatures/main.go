@@ -8,6 +8,7 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/msp"
 	"github.com/newity/crawler"
@@ -61,6 +62,11 @@ func main() {
 				logrus.Fatal(err)
 			}
 
+			sigCreator, err := tx.CreatorSignatureHexString()
+			if err != nil {
+				logrus.Fatal(err)
+			}
+
 			actions, err := tx.Actions()
 			if err != nil {
 				logrus.Fatal(err)
@@ -75,12 +81,13 @@ func main() {
 						logrus.Fatal(err)
 					}
 
-					logrus.Infof("Creator MSP ID: %s\nCreator cert: %s\nEndorser MSP ID: %s\nEndorser cert: %s\nHex representation of the endorser's signature hash: %s\n",
+					fmt.Printf("Creator MSP ID: %s\nCreator signature: %s\nCreator cert: %s\nEndorser MSP ID: %s\nEndorser cert: %s\nEndorser signature: %s\n",
 						mspidCreator,
+						sigCreator,
 						certCreator,
 						endorser.Mspid,
 						string(endorser.IdBytes),
-						GetHashedHex(endorsement.Signature))
+						hex.EncodeToString(endorsement.Signature))
 				}
 			}
 		}
