@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package blocklib
 
 import (
+	"encoding/hex"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/hyperledger/fabric-protos-go/common"
@@ -99,6 +100,24 @@ func (tx *Tx) Creator() (string, []byte, error) {
 	identity := &msp.SerializedIdentity{}
 	err = proto.Unmarshal(sighdr.Creator, identity)
 	return identity.Mspid, identity.IdBytes, err
+}
+
+// CreatorSignatureBytes extracts signature of transaction creator as bytes slice.
+func (tx *Tx) CreatorSignatureBytes() ([]byte, error) {
+	envelope, err := tx.Envelope()
+	if err != nil {
+		return nil, err
+	}
+	return envelope.Signature, err
+}
+
+// CreatorSignatureHexString extracts signature of transaction creator as hex-encoded string.
+func (tx *Tx) CreatorSignatureHexString() (string, error) {
+	envelope, err := tx.Envelope()
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(envelope.Signature), err
 }
 
 // ChaincodeId returns peer.ChaincodeID (name, version and path) of the target chaincode.
