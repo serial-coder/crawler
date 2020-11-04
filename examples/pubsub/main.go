@@ -64,8 +64,7 @@ func readFromQueue(engine *crawler.Crawler, topic string) {
 		data *parser.Data
 	)
 	for err == nil {
-		engine.
-			data, err = engine.GetFromStorage(topic)
+		data, err = engine.GetFromStorage(topic)
 		if err != nil {
 			logrus.Error(err)
 		}
