@@ -121,6 +121,18 @@ func TestCreator(t *testing.T) {
 	assert.Equal(t, "41202425b7c240ef2bfc3e9d48c457257b4d1fd5187a9943e3824be5c270f979", hex.EncodeToString(certHash.Sum(nil)))
 }
 
+func TestCreatorSignatureBytes(t *testing.T) {
+	sigBytes, err := tx.CreatorSignatureBytes()
+	assert.NoError(t, err)
+	assert.Equal(t, "30440220629f5638a935d6d2be318852da6d4dc779e5acfb3e9fae175f1f496dcc10350a022054e918b3a4fa001c0ce56a2992b8bc7bcb4733b3ea1e122393fc5e0fd92fde30", hex.EncodeToString(sigBytes))
+}
+
+func TestCreatorSignatureHexString(t *testing.T) {
+	sigHex, err := tx.CreatorSignatureHexString()
+	assert.NoError(t, err)
+	assert.Equal(t, "30440220629f5638a935d6d2be318852da6d4dc779e5acfb3e9fae175f1f496dcc10350a022054e918b3a4fa001c0ce56a2992b8bc7bcb4733b3ea1e122393fc5e0fd92fde30", sigHex)
+}
+
 func TestChaincodeId(t *testing.T) {
 	id, err := tx.ChaincodeId()
 	assert.NoError(t, err)
