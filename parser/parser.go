@@ -41,46 +41,42 @@ func (p *ParserImpl) Parse(block *common.Block) (*Data, error) {
 			logrus.Errorf("tx parser error: %s", err)
 			continue
 		}
+		actions, err := tx.Actions()
+		if err != nil {
+			logrus.Errorf("failed to actions from transaction: %s", err)
+			continue
+		}
+		for _, action := range actions {
+			//ccActionPayload := action.ChaincodeActionPayload()
+			//if ccActionPayload.Action == nil || ccActionPayload.Action.ProposalResponsePayload == nil {
+			//	logrus.Debug("no payload in ChaincodeActionPayload")
+			//	continue
+			//}
+			//
+			//ccAction, err := action.ChaincodeAction()
+			//if err != nil {
+			//	logrus.Errorf("failed to get to ChaincodeAction: %s", err)
+			//	continue
+			//}
+			//_ = ccAction
+			//rwsets, err := action.RWSets()
+			//if err != nil {
+			//	logrus.Errorf("failed to extract rwsets: %+v", err)
+			//	continue
+			//}
+			//
+			//for _, rw := range rwsets {
+			//	for _, write := range rw.KVRWSet.Writes {
+			//		_ = write
+			//	}
+			//}
 
-		if common.HeaderType(chdr.Type) == common.HeaderType_ENDORSER_TRANSACTION {
-
-			actions, err := tx.Actions()
+			ccEvent, err := action.ChaincodeEvent()
 			if err != nil {
-				logrus.Errorf("failed to actions from transaction: %s", err)
+				logrus.Errorf("failed to extract chaincode events: %s", err)
 				continue
 			}
-			for _, action := range actions {
-				//ccActionPayload := action.ChaincodeActionPayload()
-				//if ccActionPayload.Action == nil || ccActionPayload.Action.ProposalResponsePayload == nil {
-				//	logrus.Debug("no payload in ChaincodeActionPayload")
-				//	continue
-				//}
-				//
-				//ccAction, err := action.ChaincodeAction()
-				//if err != nil {
-				//	logrus.Errorf("failed to get to ChaincodeAction: %s", err)
-				//	continue
-				//}
-				//_ = ccAction
-				//rwsets, err := action.RWSets()
-				//if err != nil {
-				//	logrus.Errorf("failed to extract rwsets: %+v", err)
-				//	continue
-				//}
-				//
-				//for _, rw := range rwsets {
-				//	for _, write := range rw.KVRWSet.Writes {
-				//		_ = write
-				//	}
-				//}
-
-				ccEvent, err := action.ChaincodeEvent()
-				if err != nil {
-					logrus.Errorf("failed to extract chaincode events: %s", err)
-					continue
-				}
-				selectedEvents = append(selectedEvents, ccEvent)
-			}
+			selectedEvents = append(selectedEvents, ccEvent)
 		}
 	}
 
