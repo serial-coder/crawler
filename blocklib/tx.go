@@ -48,6 +48,77 @@ func (tx *Tx) Envelope() (*common.Envelope, error) {
 	return envelope, nil
 }
 
+// ConfigEnvelope returns pointer to common.ConfigEnvelope.
+// common.Envelope contains config and last update payload.
+func (tx *Tx) ConfigEnvelope() (*common.ConfigEnvelope, error) {
+	envelope, err := tx.Envelope()
+	if err != nil {
+		return nil, err
+	}
+	payload := &common.Payload{}
+	if err := proto.Unmarshal(envelope.Payload, payload); err != nil {
+		return nil, err
+	}
+
+	configEnvelope := &common.ConfigEnvelope{}
+	if err := proto.Unmarshal(payload.Data, configEnvelope); err != nil {
+		return nil, err
+	}
+
+	return configEnvelope, nil
+}
+
+// ConfigSequence returns sequence number of config.
+func (tx *Tx) ConfigSequence() (uint64, error) {
+	configEnvelope, err := tx.ConfigEnvelope()
+	if err != nil {
+		return 0, err
+	}
+	return configEnvelope.Config.Sequence, nil
+}
+
+// ConfigGroup returns a pointer to common.ConfigGroup.
+// ConfigGroup is the hierarchical data structure for holding config.
+func (tx *Tx) ConfigGroup() (*common.ConfigGroup, error) {
+	configEnvelope, err := tx.ConfigEnvelope()
+	if err != nil {
+		return nil, err
+	}
+	return configEnvelope.Config.ChannelGroup, nil
+}
+
+// ConfigEnvelopeLastUpdatePayload payload of last config update.
+func (tx *Tx) ConfigEnvelopeLastUpdatePayload() (*common.Payload, error) {
+	configEnvelope, err := tx.ConfigEnvelope()
+	if err != nil {
+		return nil, err
+	}
+	payload := &common.Payload{}
+	err = proto.Unmarshal(configEnvelope.LastUpdate.Payload, payload)
+	if err != nil {
+		return nil, err
+	}
+	return payload, nil
+}
+
+// CfgEnvLastUpdateCreatorSignatureBytes extracts signature of transaction creator as bytes slice.
+func (tx *Tx) CfgEnvLastUpdateCreatorSignatureBytes() ([]byte, error) {
+	configEnvelope, err := tx.ConfigEnvelope()
+	if err != nil {
+		return nil, err
+	}
+	return configEnvelope.LastUpdate.Signature, nil
+}
+
+// CfgEnvLastUpdateCreatorSignatureHex extracts signature of transaction creator as hex-encoded string.
+func (tx *Tx) CfgEnvLastUpdateCreatorSignatureHex() (string, error) {
+	configEnvelope, err := tx.ConfigEnvelope()
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(configEnvelope.LastUpdate.Signature), nil
+}
+
 // Payload returns pointer to common.Payload.
 // common.Payload is the message contents (and header to allow for signing).
 func (tx *Tx) Payload() (*common.Payload, error) {
