@@ -20,6 +20,7 @@ import (
 var (
 	tx        Tx
 	invalidtx Tx
+	configtx  Tx
 )
 
 func TestMain(m *testing.M) {
@@ -35,10 +36,37 @@ func TestMain(m *testing.M) {
 	}
 	invalidtx = txsinvalid[0]
 
+	conftxs, err := readTxsFromBlock("./mock/config.pb")
+	if err != nil {
+		log.Error(err)
+	}
+	configtx = conftxs[0]
+
 	m.Run()
 }
 
 func readTxsFromBlock(pathToBlock string) ([]Tx, error) {
+	file, err := ioutil.ReadFile(pathToBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	fabBlock := &common.Block{}
+	err = proto.Unmarshal(file, fabBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := FromFabricBlock(fabBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	txs, err := block.Txs()
+	return txs, err
+}
+
+func readConfigBlock(pathToBlock string) ([]Tx, error) {
 	file, err := ioutil.ReadFile(pathToBlock)
 	if err != nil {
 		return nil, err
@@ -175,4 +203,42 @@ func TestActions(t *testing.T) {
 		assert.Equal(t, "3b2106648e7b0773db03d160dbfef48a514f0871f8e18524a10a2de19fb21dd9", hex.EncodeToString(creatorHash.Sum(nil)))
 		assert.Equal(t, uint64(2779780183085072792), binary.BigEndian.Uint64(action.SignatureHeader.Nonce))
 	}
+}
+
+func TestConfigEnvelope(t *testing.T) {
+	envelope, err := configtx.ConfigEnvelope()
+	assert.NoError(t, err)
+	assert.NotNil(t, envelope.Config)
+	assert.NotNil(t, envelope.LastUpdate)
+}
+
+func TestConfigSequence(t *testing.T) {
+	sequence, err := configtx.ConfigSequence()
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(4), sequence)
+}
+
+func TestConfigEnvelopeLastUpdatePayload(t *testing.T) {
+	payload, err := configtx.ConfigEnvelopeLastUpdatePayload()
+	assert.NoError(t, err)
+	assert.NotNil(t, payload.Data)
+	assert.NotNil(t, payload.Header)
+}
+
+func TestConfigGroup(t *testing.T) {
+	configGroup, err := configtx.ConfigGroup()
+	assert.NoError(t, err)
+	assert.NotNil(t, configGroup)
+}
+
+func TestCfgEnvLastUpdateCreatorSignatureBytes(t *testing.T) {
+	sigbytes, err := configtx.CfgEnvLastUpdateCreatorSignatureBytes()
+	assert.NoError(t, err)
+	assert.Equal(t, "3044022010972f8b345756ab1a6da4e869a7465a8b5bb7fe60df04ff0f22711d1343f1fa022035153835fde7606448c2cda034d359d52c0b9b80540d718d8fafeb4170fbff5f", hex.EncodeToString(sigbytes))
+}
+
+func TestCfgEnvLastUpdateCreatorSignatureHex(t *testing.T) {
+	sighex, err := configtx.CfgEnvLastUpdateCreatorSignatureHex()
+	assert.NoError(t, err)
+	assert.Equal(t, "3044022010972f8b345756ab1a6da4e869a7465a8b5bb7fe60df04ff0f22711d1343f1fa022035153835fde7606448c2cda034d359d52c0b9b80540d718d8fafeb4170fbff5f", sighex)
 }
