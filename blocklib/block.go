@@ -22,6 +22,7 @@ type Block struct {
 	datahash   []byte
 	Metadata   [][]byte
 	txsFilter  []uint8
+	isconfig   bool
 }
 
 // BlockSignature contains nonce, cert, MSP ID and signature of the orderer which signed the block
@@ -61,6 +62,23 @@ func FromFabricBlock(block *common.Block) (*Block, error) {
 		)
 	}
 
+	envelope := &common.Envelope{}
+	if err := proto.Unmarshal(block.Data.Data[0], envelope); err != nil {
+		return nil, err
+	}
+
+	payload := &common.Payload{}
+	err = proto.Unmarshal(envelope.Payload, payload)
+	if err != nil {
+		return nil, err
+	}
+
+	hdr := &common.ChannelHeader{}
+	err = proto.Unmarshal(payload.Header.ChannelHeader, hdr)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Block{
 		Data:       block.Data.Data,
 		number:     block.Header.Number,
@@ -69,7 +87,13 @@ func FromFabricBlock(block *common.Block) (*Block, error) {
 		prevhash:   block.Header.PreviousHash,
 		datahash:   block.Header.DataHash,
 		txsFilter:  block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER],
+		isconfig:   common.HeaderType(hdr.Type) == common.HeaderType_CONFIG || common.HeaderType(hdr.Type) == common.HeaderType_ORDERER_TRANSACTION,
 	}, nil
+}
+
+// IsConfig returns a boolean value that indicates whether the block is a configuration block.
+func (b *Block) IsConfig() bool {
+	return b.isconfig
 }
 
 // Number returns a block number.
@@ -100,14 +124,17 @@ func (b *Block) Txs() ([]Tx, error) {
 
 	var txs []Tx
 	for txNumber, data := range b.Data {
-		for _, code := range peer.TxValidationCode_value {
-			if b.txsFilter[txNumber] == uint8(code) {
-				validationCode = code
-				validationStatus = peer.TxValidationCode_name[code]
+		if b.IsConfig() {
+			txs = append(txs, Tx{Data: data, validationCode: 0, validationStatus: ""})
+		} else {
+			for _, code := range peer.TxValidationCode_value {
+				if b.txsFilter[txNumber] == uint8(code) {
+					validationCode = code
+					validationStatus = peer.TxValidationCode_name[code]
+				}
 			}
+			txs = append(txs, Tx{Data: data, validationCode: validationCode, validationStatus: validationStatus})
 		}
-
-		txs = append(txs, Tx{Data: data, validationCode: validationCode, validationStatus: validationStatus})
 	}
 	return txs, nil
 }
