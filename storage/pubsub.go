@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"google.golang.org/api/option"
+	"sync"
 	"time"
 )
 
@@ -79,28 +80,48 @@ func (p *PubSub) Put(topic string, msg []byte) error {
 	return nil
 }
 
-// Get reads message from topic.
+// Get reads one message from the topic and closes channel.
 func (p *PubSub) Get(topic string) ([]byte, error) {
 	var err error
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, _ := context.WithCancel(context.Background())
 	ch, errch := make(chan []byte), make(chan error)
 	go func(ch chan []byte, errch chan error) {
 		err = p.subscriptions[topic].Receive(ctx, func(ctx context.Context, m *pubsub.Message) {
 			ch <- m.Data
-			m.Ack()
+			return
 		})
-		if !errors.As(err, &context.Canceled) {
+		if err != nil && !errors.As(err, &context.Canceled) {
 			errch <- err
 		}
 	}(ch, errch)
 
 	select {
 	case data := <-ch:
-		cancel()
 		return data, nil
 	case err = <-errch:
 		return nil, err
 	}
+}
+
+// GetStream reads a stream of messages from topic and writes them to the channel.
+func (p *PubSub) GetStream(topic string) (<-chan []byte, <-chan error, context.CancelFunc) {
+	var err error
+	ctx, cancel := context.WithCancel(context.Background())
+	ch, errch := make(chan []byte), make(chan error)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		wg.Done()
+		err = p.subscriptions[topic].Receive(ctx, func(ctx context.Context, m *pubsub.Message) {
+			ch <- m.Data
+			m.Ack()
+		})
+		if err != nil && !errors.As(err, &context.Canceled) {
+			errch <- err
+		}
+	}()
+	wg.Wait()
+	return ch, errch, cancel
 }
 
 // Detele deletes topic and subscription specified by key.
