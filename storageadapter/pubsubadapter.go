@@ -2,7 +2,6 @@ package storageadapter
 
 import (
 	"context"
-	"fmt"
 	"github.com/newity/crawler/parser"
 	"github.com/newity/crawler/storage"
 	"sync"
@@ -43,7 +42,6 @@ func (s *PubSubAdapter) ReadStream(topic string) (<-chan *parser.Data, <-chan er
 		for {
 			select {
 			case msg := <-stream:
-				fmt.Println("receive adapter")
 				decodedMsg, err := Decode(msg)
 				if err != nil {
 					errOutChan <- err
@@ -55,6 +53,5 @@ func (s *PubSubAdapter) ReadStream(topic string) (<-chan *parser.Data, <-chan er
 		}
 	}()
 	wg.Wait()
-	fmt.Println("ok")
 	return out, errOutChan, cancel
 }
