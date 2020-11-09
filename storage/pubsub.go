@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"google.golang.org/api/option"
+	"io"
 	"sync"
 	"time"
 )
@@ -116,6 +117,9 @@ func (p *PubSub) GetStream(topic string) (<-chan []byte, <-chan error, context.C
 			ch <- m.Data
 			m.Ack()
 		})
+		if err == io.EOF {
+			errch <- io.EOF
+		}
 		if err != nil && !errors.As(err, &context.Canceled) {
 			errch <- err
 		}
