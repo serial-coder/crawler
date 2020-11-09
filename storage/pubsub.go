@@ -62,6 +62,7 @@ func (p *PubSub) InitChannelsStorage(channels []string) error {
 				return nil
 			}
 		}
+
 		sub.ReceiveSettings.Synchronous = true
 		p.subscriptions[channel] = sub
 	}
@@ -71,7 +72,6 @@ func (p *PubSub) InitChannelsStorage(channels []string) error {
 // Put stores message to topic.
 func (p *PubSub) Put(topic string, msg []byte) error {
 	res := p.topics[topic].Publish(p.ctx, &pubsub.Message{
-		ID:          topic,
 		Data:        msg,
 		OrderingKey: "0",
 	})
