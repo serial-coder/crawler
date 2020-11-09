@@ -1,6 +1,7 @@
 package storageadapter
 
 import (
+	"context"
 	"github.com/newity/crawler/parser"
 	"github.com/newity/crawler/storage"
 	"strconv"
@@ -28,4 +29,8 @@ func (s *SimpleAdapter) Retrieve(blocknum string) (*parser.Data, error) {
 		return nil, err
 	}
 	return Decode(value)
+}
+
+func (s *SimpleAdapter) ReadStream(blocknum string) (<-chan *parser.Data, <-chan error, context.CancelFunc) {
+	return nil, nil, nil
 }

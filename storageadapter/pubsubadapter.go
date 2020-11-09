@@ -1,8 +1,11 @@
 package storageadapter
 
 import (
+	"context"
+	"fmt"
 	"github.com/newity/crawler/parser"
 	"github.com/newity/crawler/storage"
+	"sync"
 )
 
 type PubSubAdapter struct {
@@ -27,4 +30,31 @@ func (s *PubSubAdapter) Retrieve(topic string) (*parser.Data, error) {
 		return nil, err
 	}
 	return Decode(value)
+}
+
+func (s *PubSubAdapter) ReadStream(topic string) (<-chan *parser.Data, <-chan error, context.CancelFunc) {
+	stream, errChan, cancel := s.storage.GetStream(topic)
+	var out, errOutChan = make(chan *parser.Data), make(chan error)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		wg.Done()
+		for {
+			select {
+			case msg := <-stream:
+				fmt.Println("receive adapter")
+				decodedMsg, err := Decode(msg)
+				if err != nil {
+					errOutChan <- err
+				}
+				out <- decodedMsg
+			case err := <-errChan:
+				errOutChan <- err
+			}
+		}
+	}()
+	wg.Wait()
+	fmt.Println("ok")
+	return out, errOutChan, cancel
 }
