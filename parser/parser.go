@@ -21,57 +21,59 @@ func New() *ParserImpl {
 
 func (p *ParserImpl) Parse(block *common.Block) (*Data, error) {
 	b, err := blocklib.FromFabricBlock(block)
-	if err != nil {
-		return nil, err
-	}
-	txs, err := b.Txs()
-	if err != nil {
-		return nil, err
-	}
-
-	var (
-		selectedTransactions []blocklib.Tx
-		selectedEvents       []*peer.ChaincodeEvent
-	)
-
-	for _, tx := range txs {
-		selectedTransactions = append(selectedTransactions, tx)
-		actions, err := tx.Actions()
+	if !b.IsConfig() {
 		if err != nil {
-			logrus.Errorf("failed to actions from transaction: %s", err)
-			continue
+			return nil, err
 		}
-		for _, action := range actions {
-			//ccActionPayload := action.ChaincodeActionPayload()
-			//if ccActionPayload.Action == nil || ccActionPayload.Action.ProposalResponsePayload == nil {
-			//	logrus.Debug("no payload in ChaincodeActionPayload")
-			//	continue
-			//}
-			//
-			//ccAction, err := action.ChaincodeAction()
-			//if err != nil {
-			//	logrus.Errorf("failed to get to ChaincodeAction: %s", err)
-			//	continue
-			//}
-			//_ = ccAction
-			//rwsets, err := action.RWSets()
-			//if err != nil {
-			//	logrus.Errorf("failed to extract rwsets: %+v", err)
-			//	continue
-			//}
-			//
-			//for _, rw := range rwsets {
-			//	for _, write := range rw.KVRWSet.Writes {
-			//		_ = write
-			//	}
-			//}
+		txs, err := b.Txs()
+		if err != nil {
+			return nil, err
+		}
 
-			ccEvent, err := action.ChaincodeEvent()
+		var (
+			selectedTransactions []blocklib.Tx
+			selectedEvents       []*peer.ChaincodeEvent
+		)
+
+		for _, tx := range txs {
+			selectedTransactions = append(selectedTransactions, tx)
+			actions, err := tx.Actions()
 			if err != nil {
-				logrus.Errorf("failed to extract chaincode events: %s", err)
+				logrus.Errorf("failed to actions from transaction: %s", err)
 				continue
 			}
-			selectedEvents = append(selectedEvents, ccEvent)
+			for _, action := range actions {
+				//ccActionPayload := action.ChaincodeActionPayload()
+				//if ccActionPayload.Action == nil || ccActionPayload.Action.ProposalResponsePayload == nil {
+				//	logrus.Debug("no payload in ChaincodeActionPayload")
+				//	continue
+				//}
+				//
+				//ccAction, err := action.ChaincodeAction()
+				//if err != nil {
+				//	logrus.Errorf("failed to get to ChaincodeAction: %s", err)
+				//	continue
+				//}
+				//_ = ccAction
+				//rwsets, err := action.RWSets()
+				//if err != nil {
+				//	logrus.Errorf("failed to extract rwsets: %+v", err)
+				//	continue
+				//}
+				//
+				//for _, rw := range rwsets {
+				//	for _, write := range rw.KVRWSet.Writes {
+				//		_ = write
+				//	}
+				//}
+
+				ccEvent, err := action.ChaincodeEvent()
+				if err != nil {
+					logrus.Errorf("failed to extract chaincode events: %s", err)
+					continue
+				}
+				selectedEvents = append(selectedEvents, ccEvent)
+			}
 		}
 	}
 
