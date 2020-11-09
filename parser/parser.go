@@ -36,11 +36,6 @@ func (p *ParserImpl) Parse(block *common.Block) (*Data, error) {
 
 	for _, tx := range txs {
 		selectedTransactions = append(selectedTransactions, tx)
-		chdr, err := tx.ChannelHeader()
-		if err != nil {
-			logrus.Errorf("tx parser error: %s", err)
-			continue
-		}
 		actions, err := tx.Actions()
 		if err != nil {
 			logrus.Errorf("failed to actions from transaction: %s", err)
