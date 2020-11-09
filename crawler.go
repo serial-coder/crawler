@@ -29,6 +29,7 @@ SPDX-License-Identifier: Apache-2.0
 package crawler
 
 import (
+	"context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/event"
 	contextApi "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
@@ -202,4 +203,8 @@ func (c *Crawler) Run() {
 // GetBlock retrieves specified data from a storage by specified key and returns it in the form of parser.Data.
 func (c *Crawler) GetFromStorage(key string) (*parser.Data, error) {
 	return c.adapter.Retrieve(key)
+}
+
+func (c *Crawler) ReadStreamFromStorage(key string) (<-chan *parser.Data, <-chan error, context.CancelFunc) {
+	return c.adapter.ReadStream(key)
 }
