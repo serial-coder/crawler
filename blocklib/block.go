@@ -6,11 +6,18 @@ SPDX-License-Identifier: Apache-2.0
 package blocklib
 
 import (
+	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/msp"
+	"github.com/hyperledger/fabric-protos-go/orderer"
 	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
+	"github.com/hyperledger/fabric-sdk-go/pkg/fab/resource"
+	"github.com/newity/crawler/blocklib/smartbft"
+	bftcommon "github.com/newity/crawler/blocklib/smartbft/common"
 	"github.com/pkg/errors"
+	"unsafe"
 )
 
 // Block contains all the necessary information about the blockchain block
@@ -33,6 +40,11 @@ type BlockSignature struct {
 	Nonce     []byte
 }
 
+type BFTSerializedIdentity struct {
+	ConsenterId uint64
+	Identity    msp.SerializedIdentity
+}
+
 // FromFabricBlock converts common.Block to blocklib.Block.
 // Such conversion is necessary for further comfortable work with information from the block.
 func FromFabricBlock(block *common.Block) (*Block, error) {
@@ -48,6 +60,7 @@ func FromFabricBlock(block *common.Block) (*Block, error) {
 		if err := proto.Unmarshal(metadataSignature.SignatureHeader, sigHdr); err != nil {
 			return nil, errors.Wrap(err, "error unmarshaling SignatureHeader")
 		}
+
 		creator := &msp.SerializedIdentity{}
 		if err = proto.Unmarshal(sigHdr.Creator, creator); err != nil {
 			return nil, err
@@ -89,6 +102,139 @@ func FromFabricBlock(block *common.Block) (*Block, error) {
 		txsFilter:  block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER],
 		isconfig:   common.HeaderType(hdr.Type) == common.HeaderType_CONFIG || common.HeaderType(hdr.Type) == common.HeaderType_ORDERER_TRANSACTION,
 	}, nil
+}
+
+// FromBFTFabricBlock converts common.Block produced by BFT-orderer to blocklib.Block.
+func FromBFTFabricBlock(cli *ledger.Client, block *common.Block) (*Block, error) {
+	metadata := &common.Metadata{}
+	err := proto.Unmarshal(block.Metadata.Metadata[common.BlockMetadataIndex_SIGNATURES], metadata)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error unmarshaling metadata from block at index [%s]", common.BlockMetadataIndex_SIGNATURES)
+	}
+
+	identities, err := GetBFTOrderersIdentities(cli, block)
+	if err != nil {
+		return nil, err
+	}
+
+	var blockSignatures []BlockSignature
+	for _, metadataSignature := range metadata.Signatures {
+		sigHdr := &common.SignatureHeader{}
+		if err := proto.Unmarshal(metadataSignature.SignatureHeader, sigHdr); err != nil {
+			return nil, errors.Wrap(err, "error unmarshaling SignatureHeader")
+		}
+
+		creator := &msp.SerializedIdentity{}
+		if err = proto.Unmarshal(sigHdr.Creator, creator); err != nil {
+			return nil, err
+		}
+		for _, identity := range identities {
+			blockSignatures = append(blockSignatures,
+				BlockSignature{
+					Cert:      identity.Identity.IdBytes,
+					MSPID:     identity.Identity.Mspid,
+					Signature: metadataSignature.Signature,
+					Nonce:     sigHdr.Nonce,
+				},
+			)
+		}
+	}
+
+	envelope := &common.Envelope{}
+	if err := proto.Unmarshal(block.Data.Data[0], envelope); err != nil {
+		return nil, err
+	}
+
+	payload := &common.Payload{}
+	err = proto.Unmarshal(envelope.Payload, payload)
+	if err != nil {
+		return nil, err
+	}
+
+	hdr := &common.ChannelHeader{}
+	err = proto.Unmarshal(payload.Header.ChannelHeader, hdr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Block{
+		Data:       block.Data.Data,
+		number:     block.Header.Number,
+		signatures: blockSignatures,
+		Metadata:   block.Metadata.Metadata,
+		prevhash:   block.Header.PreviousHash,
+		datahash:   block.Header.DataHash,
+		txsFilter:  block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER],
+		isconfig:   common.HeaderType(hdr.Type) == common.HeaderType_CONFIG || common.HeaderType(hdr.Type) == common.HeaderType_ORDERER_TRANSACTION,
+	}, nil
+}
+
+func GetBFTOrderersIdentities(cli *ledger.Client, blk *common.Block) ([]BFTSerializedIdentity, error) {
+	if blk.Metadata == nil {
+		return nil, errors.New("no metadata in block")
+	}
+
+	index := int(common.BlockMetadataIndex_SIGNATURES)
+
+	if len(blk.Metadata.Metadata) <= index {
+		return nil, fmt.Errorf("no metadata at index [%d]", index)
+	}
+
+	md := new(bftcommon.BFTMetadata)
+	if err := proto.Unmarshal(blk.Metadata.Metadata[index], md); err != nil {
+		return nil, fmt.Errorf("couldn't unmarshal block metadata: %w", err)
+	}
+
+	identities := make([]BFTSerializedIdentity, 0, len(md.Signatures))
+	lc := common.LastConfig{}
+	if err := proto.Unmarshal(md.Value, &lc); err == nil {
+		if cfgBlock, err := cli.QueryBlock(lc.Index); err == nil {
+			if configEnvelope, err := resource.CreateConfigEnvelope(cfgBlock.Data.Data[0]); err == nil {
+				identities, err = getOrderersIdentities((*common.ConfigEnvelope)(unsafe.Pointer(configEnvelope)))
+				if err != nil {
+					return nil, fmt.Errorf("couldn't extract orderers identities: %w", err)
+				}
+			}
+		}
+	}
+
+	// filter 'identities' slice (all channel orderers) to find those which signed this block
+	var filteredIdentities []BFTSerializedIdentity
+	for _, identity := range identities {
+		for _, signature := range md.Signatures {
+			if identity.ConsenterId == signature.SignerId {
+				filteredIdentities = append(filteredIdentities, identity)
+			}
+		}
+	}
+	return filteredIdentities, nil
+}
+
+func getOrderersIdentities(envelope *common.ConfigEnvelope) ([]BFTSerializedIdentity, error) {
+	consensusType := envelope.Config.ChannelGroup.Groups["Orderer"].Values["ConsensusType"].Value
+
+	ct := &orderer.ConsensusType{}
+	err := proto.Unmarshal(consensusType, ct)
+	if err != nil {
+		return nil, fmt.Errorf("Failed unmarshaling ConsensusType from consensusType: %v", err)
+	}
+
+	m := &smartbft.ConfigMetadata{}
+	err = proto.Unmarshal(ct.Metadata, m)
+	if err != nil {
+		return nil, fmt.Errorf("Failed unmarshaling ConfigMetadata from metadata: %v", err)
+	}
+
+	identity := msp.SerializedIdentity{}
+	var identities []BFTSerializedIdentity
+	for _, consenter := range m.Consenters {
+		if err = proto.Unmarshal(consenter.Identity, &identity); err != nil {
+			return nil, err
+		}
+		identities = append(identities, BFTSerializedIdentity{consenter.ConsenterId, identity})
+	}
+
+	return identities, nil
 }
 
 // IsConfig returns a boolean value that indicates whether the block is a configuration block.
