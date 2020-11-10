@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	cloud.google.com/go/pubsub v1.8.2
+	github.com/cloudflare/cfssl v1.5.0 // indirect
 	github.com/dgraph-io/badger/v2 v2.2007.2
 	github.com/gogo/protobuf v1.1.1
 	github.com/golang/protobuf v1.4.3
@@ -15,6 +16,8 @@ require (
 	github.com/prometheus/common v0.6.0
 	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.5.1
+	github.com/sykesm/zap-logfmt v0.0.4 // indirect
 	go.opencensus.io v0.22.5 // indirect
+	go.uber.org/zap v1.16.0 // indirect
 	google.golang.org/api v0.34.0
 )
