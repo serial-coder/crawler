@@ -21,20 +21,20 @@ func New() *ParserImpl {
 
 func (p *ParserImpl) Parse(block *common.Block) (*Data, error) {
 	b, err := blocklib.FromFabricBlock(block)
+	if err != nil {
+		return nil, err
+	}
+	txs, err := b.Txs()
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		selectedTransactions []blocklib.Tx
+		selectedEvents       []*peer.ChaincodeEvent
+	)
+
 	if !b.IsConfig() {
-		if err != nil {
-			return nil, err
-		}
-		txs, err := b.Txs()
-		if err != nil {
-			return nil, err
-		}
-
-		var (
-			selectedTransactions []blocklib.Tx
-			selectedEvents       []*peer.ChaincodeEvent
-		)
-
 		for _, tx := range txs {
 			selectedTransactions = append(selectedTransactions, tx)
 			actions, err := tx.Actions()
