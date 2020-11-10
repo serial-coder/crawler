@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"google.golang.org/api/option"
-	"io"
 	"sync"
 	"time"
 )
@@ -89,6 +88,7 @@ func (p *PubSub) Get(topic string) ([]byte, error) {
 	go func(ch chan []byte, errch chan error) {
 		err = p.subscriptions[topic].Receive(ctx, func(ctx context.Context, m *pubsub.Message) {
 			ch <- m.Data
+			m.Ack()
 			return
 		})
 		if err != nil && !errors.As(err, &context.Canceled) {
@@ -117,9 +117,6 @@ func (p *PubSub) GetStream(topic string) (<-chan []byte, <-chan error, context.C
 			ch <- m.Data
 			m.Ack()
 		})
-		if err == io.EOF {
-			errch <- io.EOF
-		}
 		if err != nil && !errors.As(err, &context.Canceled) {
 			errch <- err
 		}
