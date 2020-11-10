@@ -33,6 +33,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/event"
 	contextApi "github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/core"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fab/events/deliverclient/seek"
@@ -57,22 +58,25 @@ type Crawler struct {
 	parser          parser.Parser
 	adapter         storageadapter.StorageAdapter
 	storage         storage.Storage
+	configProvider  core.ConfigProvider
 }
 
 // New creates Crawler instance from HLF connection profile and returns pointer to it.
 // "connectionProfile" is a path to HLF connection profile
 func New(connectionProfile string, opts ...Option) (*Crawler, error) {
-	sdk, err := fabsdk.New(config.FromFile(connectionProfile))
+	configprovider := config.FromFile(connectionProfile)
+	sdk, err := fabsdk.New(configprovider)
 	if err != nil {
 		return nil, err
 	}
 
 	crawl := &Crawler{
-		sdk:           sdk,
-		chCli:         make(map[string]*channel.Client),
-		eventCli:      make(map[string]*event.Client),
-		notifiers:     make(map[string]<-chan *fab.BlockEvent),
-		registrations: make(map[string]fab.Registration),
+		sdk:            sdk,
+		chCli:          make(map[string]*channel.Client),
+		eventCli:       make(map[string]*event.Client),
+		notifiers:      make(map[string]<-chan *fab.BlockEvent),
+		registrations:  make(map[string]fab.Registration),
+		configProvider: configprovider,
 	}
 
 	for _, opt := range opts {
@@ -102,6 +106,16 @@ func New(connectionProfile string, opts ...Option) (*Crawler, error) {
 	}
 
 	return crawl, nil
+}
+
+// SDK returns fabsdk.FabricSDK instance.
+func (c *Crawler) SDK() *fabsdk.FabricSDK {
+	return c.sdk
+}
+
+// ConfigProvider returns core.ConfigProvider instance.
+func (c *Crawler) ConfigProvider() core.ConfigProvider {
+	return c.configProvider
 }
 
 // Connect connects crawler to channel 'ch' as identity specified in 'username' from organization with name 'org'
