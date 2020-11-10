@@ -13,14 +13,12 @@ import (
 	"github.com/newity/crawler/storageadapter"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
-	"io"
-	"time"
 )
 
 const (
-	CHANNEL = "fiat"
+	CHANNEL = "mychannel"
 	USER    = "User1"
-	ORG     = "atomyze"
+	ORG     = "Org1"
 )
 
 func main() {
@@ -51,16 +49,12 @@ func main() {
 
 	go engine.Run()
 
-	// wait for pulling blocks to storage
-	time.Sleep(6 * time.Second)
-
 	readFromQueue(engine, CHANNEL)
 	engine.StopListenAll()
 }
 
 func readFromQueue(engine *crawler.Crawler, topic string) {
 	dataChan, errChan, _ := engine.ReadStreamFromStorage(topic)
-
 	for {
 		select {
 		case data := <-dataChan:
@@ -70,23 +64,19 @@ func readFromQueue(engine *crawler.Crawler, topic string) {
 			for _, signature := range data.BlockSignatures {
 				fmt.Printf("MSP ID: %s\nSignature: %s\nCertificate:\n%s\n", signature.MSPID, hex.EncodeToString(signature.Signature), string(signature.Cert))
 			}
-			fmt.Println("Transactions")
 			for _, tx := range data.Txs {
 				t, err := tx.Timestamp()
 				if err != nil {
-					logrus.Error(err)
+					logrus.Error("failed to get timestamp", err)
 				}
 				txid, err := tx.TxId()
 				if err != nil {
-					logrus.Error(err)
+					logrus.Error("failed to get tx ID", err)
 				}
 
 				fmt.Printf("Tx ID: %s\nCreation time: %s\n", txid, t.String())
 			}
 		case err := <-errChan:
-			if err == io.EOF {
-				logrus.Info("End of stream")
-			}
 			logrus.Error(err)
 		}
 	}
