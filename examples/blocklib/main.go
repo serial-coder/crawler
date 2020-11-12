@@ -14,12 +14,6 @@ import (
 	"io/ioutil"
 )
 
-const (
-	CHANNEL = "fiat"
-	USER    = "User1"
-	ORG     = "atomyze"
-)
-
 func main() {
 	fabBlock, err := getBlock("../../blocklib/mock/config.pb")
 	if err != nil {
