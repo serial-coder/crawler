@@ -58,7 +58,7 @@ func readFromQueue(engine *crawler.Crawler, topic string) {
 	for {
 		select {
 		case data := <-dataChan:
-			logrus.Infof("block %d with hash %s and prebious hash %s\n\nOrderers signed:\n", data.BlockNumber,
+			logrus.Infof("block %d with hash %s and previous hash %s\n\nOrderers signed:\n", data.BlockNumber,
 				hex.EncodeToString(data.Datahash),
 				hex.EncodeToString(data.Prevhash))
 			for _, signature := range data.BlockSignatures {

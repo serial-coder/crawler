@@ -56,7 +56,7 @@ func readBlock(engine *crawler.Crawler, num int) {
 		logrus.Error(err)
 	}
 
-	logrus.Infof("block %d with hash %s and prebious hash %s\n\nOrderers signed:\n", data.BlockNumber,
+	logrus.Infof("block %d with hash %s and previous hash %s\n\nOrderers signed:\n", data.BlockNumber,
 		hex.EncodeToString(data.Datahash),
 		hex.EncodeToString(data.Prevhash))
 	for _, signature := range data.BlockSignatures {
