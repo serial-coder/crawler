@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto3";
 
-option go_package = "github.com/hyperledger/fabric/protos/orderer/smartbft";
+option go_package = "github.com/newity/crawler/blocklib/smartbft/common";
 option java_package = "org.hyperledger.fabric.protos.orderer.smartbft";
 
 package smartbft;
