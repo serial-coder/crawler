@@ -4,7 +4,6 @@ package storage
 import (
 	"cloud.google.com/go/pubsub"
 	"context"
-	"errors"
 	"google.golang.org/api/option"
 	"sync"
 	"time"
@@ -91,7 +90,7 @@ func (p *PubSub) Get(topic string) ([]byte, error) {
 			m.Ack()
 			return
 		})
-		if err != nil && !errors.Is(err, context.Canceled) {
+		if err != nil && err == context.Canceled {
 			errch <- err
 		}
 	}(ch, errch)
@@ -117,7 +116,7 @@ func (p *PubSub) GetStream(topic string) (<-chan []byte, <-chan error, context.C
 			ch <- m.Data
 			m.Ack()
 		})
-		if err != nil && !errors.Is(err, context.Canceled) {
+		if err != nil && err == context.Canceled {
 			errch <- err
 		}
 	}()
