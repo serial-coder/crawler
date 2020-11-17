@@ -16,13 +16,14 @@ import (
 )
 
 const (
-	CHANNEL = "mychannel"
-	USER    = "User1"
-	ORG     = "Org1"
+	CHANNEL   = "mychannel"
+	USER      = "User1"
+	ORG       = "Org1"
+	CREDSFILE = "path/to/creds.json"
 )
 
 func main() {
-	pubsub, err := storage.NewPubSub("hlf-newity", option.WithCredentialsFile("/home/vadim/tests/pubsub/hlf-newity-9501093ed64e.json"))
+	pubsub, err := storage.NewPubSub("hlf-newity", option.WithCredentialsFile(CREDSFILE))
 	if err != nil {
 		logrus.Fatal(err)
 	}
