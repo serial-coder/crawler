@@ -1,7 +1,6 @@
 package storageadapter
 
 import (
-	"context"
 	"github.com/newity/crawler/parser"
 	"github.com/newity/crawler/storage"
 	"sync"
@@ -32,7 +31,7 @@ func (s *QueueAdapter) Retrieve(topic string) (*parser.Data, error) {
 	return Decode(value)
 }
 
-func (s *QueueAdapter) ReadStream(topic string) (<-chan *parser.Data, <-chan error, context.CancelFunc) {
+func (s *QueueAdapter) ReadStream(topic string) (<-chan *parser.Data, <-chan error) {
 	stream, errChan := s.storage.GetStream(topic)
 	var out, errOutChan = make(chan *parser.Data), make(chan error)
 
@@ -54,5 +53,5 @@ func (s *QueueAdapter) ReadStream(topic string) (<-chan *parser.Data, <-chan err
 		}
 	}()
 	wg.Wait()
-	return out, errOutChan, cancel
+	return out, errOutChan
 }
