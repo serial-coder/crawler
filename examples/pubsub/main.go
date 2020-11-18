@@ -19,7 +19,7 @@ const (
 	CHANNEL   = "mychannel"
 	USER      = "User1"
 	ORG       = "Org1"
-	CREDSFILE = "path/to/creds.json"
+	CREDSFILE = "/path/to/creds.json"
 )
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	engine, err := crawler.New("connection.yaml", crawler.WithStorage(pubsub), crawler.WithStorageAdapter(storageadapter.NewPubSubAdapter(pubsub)))
+	engine, err := crawler.New("connection.yaml", crawler.WithStorage(pubsub), crawler.WithStorageAdapter(storageadapter.NewQueueAdapter(pubsub)))
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -55,7 +55,7 @@ func main() {
 }
 
 func readFromQueue(engine *crawler.Crawler, topic string) {
-	dataChan, errChan, _ := engine.ReadStreamFromStorage(topic)
+	dataChan, errChan := engine.ReadStreamFromStorage(topic)
 	for {
 		select {
 		case data := <-dataChan:
