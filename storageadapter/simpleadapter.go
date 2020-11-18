@@ -31,5 +31,5 @@ func (s *SimpleAdapter) Retrieve(blocknum string) (*parser.Data, error) {
 }
 
 func (s *SimpleAdapter) ReadStream(blocknum string) (<-chan *parser.Data, <-chan error) {
-	return nil, nil, nil
+	return nil, nil
 }
