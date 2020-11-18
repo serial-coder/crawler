@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 package storage
 
 import (
-	"context"
 	badger "github.com/dgraph-io/badger/v2"
 	"os"
 	"strconv"
@@ -69,6 +68,6 @@ func (b *Badger) Close() error {
 	return b.db.Close()
 }
 
-func (b *Badger) GetStream(key string) (<-chan []byte, <-chan error, context.CancelFunc) {
-	return nil, nil, nil
+func (b *Badger) GetStream(key string) (<-chan []byte, <-chan error) {
+	return nil, nil
 }
