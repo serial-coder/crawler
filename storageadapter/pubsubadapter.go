@@ -32,7 +32,7 @@ func (s *PubSubAdapter) Retrieve(topic string) (*parser.Data, error) {
 }
 
 func (s *PubSubAdapter) ReadStream(topic string) (<-chan *parser.Data, <-chan error, context.CancelFunc) {
-	stream, errChan, cancel := s.storage.GetStream(topic)
+	stream, errChan := s.storage.GetStream(topic)
 	var out, errOutChan = make(chan *parser.Data), make(chan error)
 
 	var wg sync.WaitGroup

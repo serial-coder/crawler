@@ -104,15 +104,14 @@ func (p *PubSub) Get(topic string) ([]byte, error) {
 }
 
 // GetStream reads a stream of messages from topic and writes them to the channel.
-func (p *PubSub) GetStream(topic string) (<-chan []byte, <-chan error, context.CancelFunc) {
+func (p *PubSub) GetStream(topic string) (<-chan []byte, <-chan error) {
 	var err error
-	ctx, cancel := context.WithCancel(context.Background())
 	ch, errch := make(chan []byte), make(chan error)
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		wg.Done()
-		err = p.subscriptions[topic].Receive(ctx, func(ctx context.Context, m *pubsub.Message) {
+		err = p.subscriptions[topic].Receive(context.Background(), func(ctx context.Context, m *pubsub.Message) {
 			ch <- m.Data
 			m.Ack()
 		})
@@ -121,7 +120,7 @@ func (p *PubSub) GetStream(topic string) (<-chan []byte, <-chan error, context.C
 		}
 	}()
 	wg.Wait()
-	return ch, errch, cancel
+	return ch, errch
 }
 
 // Detele deletes topic and subscription specified by key.

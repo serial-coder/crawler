@@ -5,8 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package storage
 
-import "context"
-
 // Storage interface is a contract for storage implementations
 type Storage interface {
 	// init storage (initial setup of storage and connection create operations)
@@ -16,7 +14,7 @@ type Storage interface {
 	// get data from storage by specified key
 	Get(key string) ([]byte, error)
 	// get channel with some data from storage (for message broker storage implementations)
-	GetStream(key string) (<-chan []byte, <-chan error, context.CancelFunc)
+	GetStream(key string) (<-chan []byte, <-chan error)
 	// remove parser.Data from storage
 	Delete(key string) error
 	// close connection to storage (network connections, file descriptors, goroutines)
