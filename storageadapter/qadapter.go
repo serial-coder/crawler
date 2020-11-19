@@ -16,7 +16,7 @@ type QueueAdapter struct {
 	storage storage.Storage
 }
 
-func NewPubSubAdapter(stor storage.Storage) *QueueAdapter {
+func NewQueueAdapter(stor storage.Storage) *QueueAdapter {
 	return &QueueAdapter{stor}
 }
 
