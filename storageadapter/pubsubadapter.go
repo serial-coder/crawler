@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-// PubSubAdapter is a general adapter for message brokers
+// PubSubAdapter is a storage adapter for the Google Pub/Sub
 type PubSubAdapter struct {
 	storage storage.Storage
 }
