@@ -11,16 +11,16 @@ import (
 	"sync"
 )
 
-// QueueAdapter is a general adapter for message brokers
-type QueueAdapter struct {
+// PubSubAdapter is a general adapter for message brokers
+type PubSubAdapter struct {
 	storage storage.Storage
 }
 
-func NewQueueAdapter(stor storage.Storage) *QueueAdapter {
-	return &QueueAdapter{stor}
+func NewPubSubAdapter(stor storage.Storage) *PubSubAdapter {
+	return &PubSubAdapter{stor}
 }
 
-func (s *QueueAdapter) Inject(data *parser.Data) error {
+func (s *PubSubAdapter) Inject(data *parser.Data) error {
 	encoded, err := Encode(data)
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func (s *QueueAdapter) Inject(data *parser.Data) error {
 	return s.storage.Put(data.Channel, encoded)
 }
 
-func (s *QueueAdapter) Retrieve(topic string) (*parser.Data, error) {
+func (s *PubSubAdapter) Retrieve(topic string) (*parser.Data, error) {
 	value, err := s.storage.Get(topic)
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (s *QueueAdapter) Retrieve(topic string) (*parser.Data, error) {
 	return Decode(value)
 }
 
-func (s *QueueAdapter) ReadStream(topic string) (<-chan *parser.Data, <-chan error) {
+func (s *PubSubAdapter) ReadStream(topic string) (<-chan *parser.Data, <-chan error) {
 	stream, errChan := s.storage.GetStream(topic)
 	var out, errOutChan = make(chan *parser.Data), make(chan error)
 
