@@ -50,3 +50,4 @@ Examples:
 - find actual configuration blocks for each block in the network: https://github.com/newity/crawler/tree/master/examples/readlastconfig
 - run crawler with BadgerDB storage and retrieve specific block from storage: https://github.com/newity/crawler/tree/master/examples/saveblocksandread
 - example of Google Pub/Sub usage as Crawler storage: https://github.com/newity/crawler/tree/master/examples/pubsub
+- Blocklib usage example: https://github.com/newity/crawler/tree/master/examples/blocklib
