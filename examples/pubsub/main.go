@@ -33,7 +33,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	engine, err := crawler.New("connection.yaml", crawler.WithStorage(pubsub), crawler.WithStorageAdapter(storageadapter.NewQueueAdapter(pubsub)))
+	engine, err := crawler.New("connection.yaml", crawler.WithStorage(pubsub), crawler.WithStorageAdapter(storageadapter.NewPubSubAdapter(pubsub)))
 	if err != nil {
 		logrus.Fatal(err)
 	}
