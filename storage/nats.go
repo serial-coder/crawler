@@ -13,7 +13,7 @@ import (
 )
 
 type Nats struct {
-	connection    stan.Conn
+	Connection    stan.Conn
 	channels      []string
 	subscriptions []stan.Subscription
 }
@@ -28,7 +28,7 @@ func NewNats(clusterID, clientID, natsURL string, maxPubAcksInflight int) (*Nats
 	}
 
 	return &Nats{
-		connection: conn,
+		Connection: conn,
 	}, nil
 }
 
@@ -39,14 +39,14 @@ func (n *Nats) InitChannelsStorage(channels []string) error {
 
 // Put stores message to topic.
 func (n *Nats) Put(topic string, msg []byte) error {
-	n.connection.Publish(topic, msg) // sync call, wait for ACK from NATS Streaming
+	n.Connection.Publish(topic, msg) // sync call, wait for ACK from NATS Streaming
 	return nil
 }
 
 // Get reads one message from the topic and closes channel.
 func (n *Nats) Get(topic string) ([]byte, error) {
 	var data []byte
-	sub, err := n.connection.QueueSubscribe(topic, topic, func(m *stan.Msg) {
+	sub, err := n.Connection.QueueSubscribe(topic, topic, func(m *stan.Msg) {
 		data = m.Data
 		m.Ack()
 	})
@@ -61,7 +61,7 @@ func (n *Nats) GetStream(topic string) (<-chan []byte, <-chan error) {
 	wg.Add(1)
 	go func() {
 		wg.Done()
-		sub, err := n.connection.QueueSubscribe(topic, topic, func(m *stan.Msg) {
+		sub, err := n.Connection.QueueSubscribe(topic, topic, func(m *stan.Msg) {
 			ch <- m.Data
 			m.Ack()
 		})
@@ -89,5 +89,5 @@ func (n *Nats) Close() error {
 			return err
 		}
 	}
-	return n.connection.Close()
+	return n.Connection.Close()
 }
