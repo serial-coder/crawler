@@ -8,6 +8,7 @@ package storage
 
 import (
 	"errors"
+	"github.com/google/martian/log"
 	stan "github.com/nats-io/stan.go"
 	"sync"
 )
@@ -39,8 +40,7 @@ func (n *Nats) InitChannelsStorage(channels []string) error {
 
 // Put stores message to topic.
 func (n *Nats) Put(topic string, msg []byte) error {
-	n.Connection.Publish(topic, msg) // sync call, wait for ACK from NATS Streaming
-	return nil
+	return n.Connection.Publish(topic, msg) // sync call, wait for ACK from NATS Streaming
 }
 
 // Get reads one message from the topic and closes channel.
@@ -48,8 +48,10 @@ func (n *Nats) Get(topic string) ([]byte, error) {
 	var data []byte
 	sub, err := n.Connection.QueueSubscribe(topic, topic, func(m *stan.Msg) {
 		data = m.Data
-		m.Ack()
-	})
+		if err := m.Ack(); err != nil {
+			log.Errorf("failed to ack message, %v", err)
+		}
+	}, stan.SetManualAckMode())
 	n.subscriptions = append(n.subscriptions, sub)
 	return data, err
 }
@@ -63,8 +65,10 @@ func (n *Nats) GetStream(topic string) (<-chan []byte, <-chan error) {
 		wg.Done()
 		sub, err := n.Connection.QueueSubscribe(topic, topic, func(m *stan.Msg) {
 			ch <- m.Data
-			m.Ack()
-		})
+			if err := m.Ack(); err != nil {
+				log.Errorf("failed to ack message, %v", err)
+			}
+		}, stan.SetManualAckMode())
 		n.subscriptions = append(n.subscriptions, sub)
 		if err != nil {
 			errch <- err
