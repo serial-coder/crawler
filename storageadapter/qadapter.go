@@ -1,21 +1,26 @@
+/*
+Copyright LLC Newity. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package storageadapter
 
 import (
-	"context"
 	"github.com/newity/crawler/parser"
 	"github.com/newity/crawler/storage"
 	"sync"
 )
 
-type PubSubAdapter struct {
+// QueueAdapter is a storage adapter for the Google Pub/Sub
+type QueueAdapter struct {
 	storage storage.Storage
 }
 
-func NewPubSubAdapter(stor storage.Storage) *PubSubAdapter {
-	return &PubSubAdapter{stor}
+func NewQueueAdapter(stor storage.Storage) *QueueAdapter {
+	return &QueueAdapter{stor}
 }
 
-func (s *PubSubAdapter) Inject(data *parser.Data) error {
+func (s *QueueAdapter) Inject(data *parser.Data) error {
 	encoded, err := Encode(data)
 	if err != nil {
 		return err
@@ -23,7 +28,7 @@ func (s *PubSubAdapter) Inject(data *parser.Data) error {
 	return s.storage.Put(data.Channel, encoded)
 }
 
-func (s *PubSubAdapter) Retrieve(topic string) (*parser.Data, error) {
+func (s *QueueAdapter) Retrieve(topic string) (*parser.Data, error) {
 	value, err := s.storage.Get(topic)
 	if err != nil {
 		return nil, err
@@ -31,8 +36,8 @@ func (s *PubSubAdapter) Retrieve(topic string) (*parser.Data, error) {
 	return Decode(value)
 }
 
-func (s *PubSubAdapter) ReadStream(topic string) (<-chan *parser.Data, <-chan error, context.CancelFunc) {
-	stream, errChan, cancel := s.storage.GetStream(topic)
+func (s *QueueAdapter) ReadStream(topic string) (<-chan *parser.Data, <-chan error) {
+	stream, errChan := s.storage.GetStream(topic)
 	var out, errOutChan = make(chan *parser.Data), make(chan error)
 
 	var wg sync.WaitGroup
@@ -53,5 +58,5 @@ func (s *PubSubAdapter) ReadStream(topic string) (<-chan *parser.Data, <-chan er
 		}
 	}()
 	wg.Wait()
-	return out, errOutChan, cancel
+	return out, errOutChan
 }

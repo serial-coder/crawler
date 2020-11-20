@@ -12,28 +12,28 @@ import (
 	"github.com/newity/crawler/storage"
 	"github.com/newity/crawler/storageadapter"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
 )
 
 const (
-	CHANNEL   = "mychannel"
-	USER      = "User1"
-	ORG       = "Org1"
-	CREDSFILE = "/path/to/creds.json"
+	CHANNEL    = "mychannel"
+	USER       = "User1"
+	ORG        = "Org1"
+	CLUSTER_ID = "testcluster"
+	NATS_URL   = "nats://0.0.0.0:4222"
 )
 
 func main() {
-	pubsub, err := storage.NewPubSub("hlf-newity", option.WithCredentialsFile(CREDSFILE))
+	natsStorage, err := storage.NewNats(CLUSTER_ID, USER, NATS_URL)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	err = pubsub.InitChannelsStorage([]string{CHANNEL})
+	err = natsStorage.InitChannelsStorage([]string{CHANNEL})
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	engine, err := crawler.New("connection.yaml", crawler.WithStorage(pubsub), crawler.WithStorageAdapter(storageadapter.NewQueueAdapter(pubsub)))
+	engine, err := crawler.New("connection.yaml", crawler.WithStorage(natsStorage), crawler.WithStorageAdapter(storageadapter.NewQueueAdapter(natsStorage)))
 	if err != nil {
 		logrus.Fatal(err)
 	}

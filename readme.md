@@ -49,4 +49,6 @@ Examples:
 - parse block creator (orderer), tx creator and tx endorsers identities and signatures: https://github.com/newity/crawler/tree/master/examples/getsignatures
 - find actual configuration blocks for each block in the network: https://github.com/newity/crawler/tree/master/examples/readlastconfig
 - run crawler with BadgerDB storage and retrieve specific block from storage: https://github.com/newity/crawler/tree/master/examples/saveblocksandread
-- example of Google Pub/Sub usage as Crawler storage: https://github.com/newity/crawler/tree/master/examples/pubsub
+- Google Pub/Sub usage as Crawler storage: https://github.com/newity/crawler/tree/master/examples/pubsub
+- NATS Streaming usage as Crawler storage: https://github.com/newity/crawler/tree/master/examples/nats
+- Blocklib usage example: https://github.com/newity/crawler/tree/master/examples/blocklib
