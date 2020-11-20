@@ -18,8 +18,11 @@ type Nats struct {
 	subscriptions []stan.Subscription
 }
 
-func NewNats(clusterID, clientID, natsURL string) (*Nats, error) {
-	conn, err := stan.Connect(clusterID, clientID, stan.NatsURL(natsURL))
+func NewNats(clusterID, clientID, natsURL string, maxPubAcksInflight int) (*Nats, error) {
+	if maxPubAcksInflight == 0 {
+		maxPubAcksInflight = stan.DefaultMaxPubAcksInflight // if arg is null, set to default (16384)
+	}
+	conn, err := stan.Connect(clusterID, clientID, stan.NatsURL(natsURL), stan.MaxPubAcksInflight(maxPubAcksInflight))
 	if err != nil {
 		return nil, err
 	}
