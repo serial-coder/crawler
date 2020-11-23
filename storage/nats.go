@@ -8,8 +8,8 @@ package storage
 
 import (
 	"errors"
-	"github.com/google/martian/log"
 	stan "github.com/nats-io/stan.go"
+	log "github.com/sirupsen/logrus"
 	"sync"
 )
 
