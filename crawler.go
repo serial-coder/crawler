@@ -205,6 +205,10 @@ func (c *Crawler) Run() {
 			data, err := c.parser.Parse(blockevent.Block)
 			if err != nil {
 				logrus.Error(err)
+				continue
+			}
+			if data == nil {
+				continue
 			}
 			if err = c.adapter.Inject(data); err != nil {
 				logrus.Error(err)
