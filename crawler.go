@@ -43,7 +43,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"os"
 	"path"
-	"reflect"
 )
 
 // Crawler is responsible for fetching info from blockchain
@@ -130,16 +129,17 @@ func (c *Crawler) Connect(ch, username, org string) error {
 func (c *Crawler) Listen(opts ...ListenOpt) error {
 	var (
 		err        error
-		listenType int
+		listenType string
 		fromBlock  uint64
 		clientOpts []event.ClientOption
 	)
 
 	for _, opt := range opts {
-		if reflect.TypeOf(opt).Name() == "WithBlockNum" {
-			fromBlock = uint64(opt())
-		} else {
-			listenType = opt()
+		switch opt().(type) {
+		case string:
+			listenType = opt().(string)
+		default:
+			fromBlock = uint64(opt().(int))
 		}
 	}
 
