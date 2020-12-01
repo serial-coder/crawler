@@ -70,34 +70,34 @@ func WithStorageAdapter(a storageadapter.StorageAdapter) Option {
 	}
 }
 
-type ListenOpt func() int
+type ListenOpt func() interface{}
 
 const (
-	LISTEN_FROM = iota
-	LISTEN_NEWEST
-	LISTEN_OLDEST
+	LISTEN_FROM   = "from"
+	LISTEN_NEWEST = "newest"
+	LISTEN_OLDEST = "oldest"
 )
 
 func FromBlock() ListenOpt {
-	return func() int {
+	return func() interface{} {
 		return LISTEN_FROM
 	}
 }
 
 func WithBlockNum(block uint64) ListenOpt {
-	return func() int {
+	return func() interface{} {
 		return int(block)
 	}
 }
 
 func Newest() ListenOpt {
-	return func() int {
+	return func() interface{} {
 		return LISTEN_NEWEST
 	}
 }
 
 func Oldest() ListenOpt {
-	return func() int {
+	return func() interface{} {
 		return LISTEN_OLDEST
 	}
 }
