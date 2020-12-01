@@ -2,4 +2,7 @@ module github.com/newity/crawler/examples/readlastconfig
 
 go 1.14
 
-require github.com/newity/crawler v0.0.0-20201103160233-00c49d955952 // indirect
+require (
+	github.com/googleapis/gax-go v1.0.3 // indirect
+	github.com/newity/crawler v0.0.0-20201201120729-1e065243345e // indirect
+)
