@@ -1,4 +1,4 @@
-module github.com/newity/crawler/examples/blocklib
+module github.com/newity/crawler/examples/blocklib-events
 
 go 1.14
 

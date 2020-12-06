@@ -23,7 +23,7 @@ const (
 )
 
 func main() {
-	natsStorage, err := storage.NewNats(CLUSTER_ID, USER, NATS_URL)
+	natsStorage, err := storage.NewNats(CLUSTER_ID, USER, NATS_URL, 10000000)
 	if err != nil {
 		logrus.Fatal(err)
 	}

@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-// QueueAdapter is a storage adapter for the Google Pub/Sub
+// QueueAdapter is a general storage adapter for the message brokers
 type QueueAdapter struct {
 	storage storage.Storage
 }

@@ -9,23 +9,27 @@ package storage
 import (
 	"errors"
 	stan "github.com/nats-io/stan.go"
+	log "github.com/sirupsen/logrus"
 	"sync"
 )
 
 type Nats struct {
-	connection    stan.Conn
+	Connection    stan.Conn
 	channels      []string
 	subscriptions []stan.Subscription
 }
 
-func NewNats(clusterID, clientID, natsURL string) (*Nats, error) {
-	conn, err := stan.Connect(clusterID, clientID, stan.NatsURL(natsURL))
+func NewNats(clusterID, clientID, natsURL string, maxPubAcksInflight int) (*Nats, error) {
+	if maxPubAcksInflight == 0 {
+		maxPubAcksInflight = stan.DefaultMaxPubAcksInflight // if arg is null, set to default (16384)
+	}
+	conn, err := stan.Connect(clusterID, clientID, stan.NatsURL(natsURL), stan.MaxPubAcksInflight(maxPubAcksInflight))
 	if err != nil {
 		return nil, err
 	}
 
 	return &Nats{
-		connection: conn,
+		Connection: conn,
 	}, nil
 }
 
@@ -36,17 +40,18 @@ func (n *Nats) InitChannelsStorage(channels []string) error {
 
 // Put stores message to topic.
 func (n *Nats) Put(topic string, msg []byte) error {
-	n.connection.Publish(topic, msg) // sync call, wait for ACK from NATS Streaming
-	return nil
+	return n.Connection.Publish(topic, msg) // sync call, wait for ACK from NATS Streaming
 }
 
 // Get reads one message from the topic and closes channel.
 func (n *Nats) Get(topic string) ([]byte, error) {
 	var data []byte
-	sub, err := n.connection.QueueSubscribe(topic, topic, func(m *stan.Msg) {
+	sub, err := n.Connection.QueueSubscribe(topic, topic, func(m *stan.Msg) {
 		data = m.Data
-		m.Ack()
-	})
+		if err := m.Ack(); err != nil {
+			log.Errorf("failed to ack message, %v", err)
+		}
+	}, stan.SetManualAckMode())
 	n.subscriptions = append(n.subscriptions, sub)
 	return data, err
 }
@@ -58,10 +63,12 @@ func (n *Nats) GetStream(topic string) (<-chan []byte, <-chan error) {
 	wg.Add(1)
 	go func() {
 		wg.Done()
-		sub, err := n.connection.QueueSubscribe(topic, topic, func(m *stan.Msg) {
+		sub, err := n.Connection.QueueSubscribe(topic, topic, func(m *stan.Msg) {
 			ch <- m.Data
-			m.Ack()
-		})
+			if err := m.Ack(); err != nil {
+				log.Errorf("failed to ack message, %v", err)
+			}
+		}, stan.SetManualAckMode())
 		n.subscriptions = append(n.subscriptions, sub)
 		if err != nil {
 			errch <- err
@@ -86,5 +93,5 @@ func (n *Nats) Close() error {
 			return err
 		}
 	}
-	return n.connection.Close()
+	return n.Connection.Close()
 }

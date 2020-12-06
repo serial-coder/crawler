@@ -51,4 +51,5 @@ Examples:
 - run crawler with BadgerDB storage and retrieve specific block from storage: https://github.com/newity/crawler/tree/master/examples/saveblocksandread
 - Google Pub/Sub usage as Crawler storage: https://github.com/newity/crawler/tree/master/examples/pubsub
 - NATS Streaming usage as Crawler storage: https://github.com/newity/crawler/tree/master/examples/nats
-- Blocklib usage example: https://github.com/newity/crawler/tree/master/examples/blocklib
+- Blocklib basic usage example: https://github.com/newity/crawler/tree/master/examples/blocklib
+- Blocklib usage for getting chaincode events: https://github.com/newity/crawler/tree/master/examples/blocklib-events
