@@ -18,9 +18,10 @@ import (
 )
 
 var (
-	tx        Tx
-	invalidtx Tx
-	configtx  Tx
+	tx             Tx
+	invalidtx      Tx
+	configtx       Tx
+	configUpdateTx Tx
 )
 
 func TestMain(m *testing.M) {
@@ -41,6 +42,12 @@ func TestMain(m *testing.M) {
 		log.Error(err)
 	}
 	configtx = conftxs[0]
+
+	confUpdTxs, err := readTxsFromBlock("./mock/configUpdate.pb")
+	if err != nil {
+		log.Error(err)
+	}
+	configUpdateTx = confUpdTxs[0]
 
 	m.Run()
 }
@@ -203,6 +210,14 @@ func TestActions(t *testing.T) {
 		assert.Equal(t, "3b2106648e7b0773db03d160dbfef48a514f0871f8e18524a10a2de19fb21dd9", hex.EncodeToString(creatorHash.Sum(nil)))
 		assert.Equal(t, uint64(2779780183085072792), binary.BigEndian.Uint64(action.SignatureHeader.Nonce))
 	}
+}
+
+func TestConfigUpdate(t *testing.T) {
+	update, err := configUpdateTx.ConfigUpdate()
+	assert.NoError(t, err)
+	assert.Equal(t, "mychannel", update.ChannelId)
+	assert.Equal(t, "0a1b0a1670656572302e6f7267322e6578616d706c652e636f6d10db46", hex.EncodeToString(update.WriteSet.Groups["Application"].Groups["Org2MSP"].Values["AnchorPeers"].Value))
+
 }
 
 func TestConfigEnvelope(t *testing.T) {
