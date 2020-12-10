@@ -6,6 +6,9 @@ SPDX-License-Identifier: Apache-2.0
 package blocklib
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/asn1"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
@@ -17,6 +20,7 @@ import (
 	"github.com/newity/crawler/blocklib/smartbft"
 	bftcommon "github.com/newity/crawler/blocklib/smartbft/common"
 	"github.com/pkg/errors"
+	"math/big"
 	"unsafe"
 )
 
@@ -27,6 +31,7 @@ type Block struct {
 	signatures []BlockSignature
 	prevhash   []byte
 	datahash   []byte
+	headerhash []byte
 	Metadata   [][]byte
 	txsFilter  []uint8
 	isconfig   bool
@@ -92,6 +97,8 @@ func FromFabricBlock(block *common.Block) (*Block, error) {
 		return nil, err
 	}
 
+	headerHash := sha256.Sum256(BlockHeaderBytes(block.Header))
+
 	return &Block{
 		Data:       block.Data.Data,
 		number:     block.Header.Number,
@@ -99,9 +106,15 @@ func FromFabricBlock(block *common.Block) (*Block, error) {
 		Metadata:   block.Metadata.Metadata,
 		prevhash:   block.Header.PreviousHash,
 		datahash:   block.Header.DataHash,
+		headerhash: headerHash[:],
 		txsFilter:  block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER],
 		isconfig:   common.HeaderType(hdr.Type) == common.HeaderType_CONFIG || common.HeaderType(hdr.Type) == common.HeaderType_ORDERER_TRANSACTION,
 	}, nil
+}
+
+// CheckIntegrity compares current block header hash with previous block header hash.
+func CheckIntegrity(previousblock, currentblock *Block) bool {
+	return bytes.Equal(previousblock.headerhash, currentblock.prevhash)
 }
 
 // FromBFTFabricBlock converts common.Block produced by BFT-orderer to blocklib.Block.
@@ -157,6 +170,8 @@ func FromBFTFabricBlock(cli *ledger.Client, block *common.Block) (*Block, error)
 		return nil, err
 	}
 
+	headerHash := sha256.Sum256(BlockHeaderBytes(block.Header))
+
 	return &Block{
 		Data:       block.Data.Data,
 		number:     block.Header.Number,
@@ -164,6 +179,7 @@ func FromBFTFabricBlock(cli *ledger.Client, block *common.Block) (*Block, error)
 		Metadata:   block.Metadata.Metadata,
 		prevhash:   block.Header.PreviousHash,
 		datahash:   block.Header.DataHash,
+		headerhash: headerHash[:],
 		txsFilter:  block.Metadata.Metadata[common.BlockMetadataIndex_TRANSACTIONS_FILTER],
 		isconfig:   common.HeaderType(hdr.Type) == common.HeaderType_CONFIG || common.HeaderType(hdr.Type) == common.HeaderType_ORDERER_TRANSACTION,
 	}, nil
@@ -252,9 +268,14 @@ func (b *Block) PreviousHash() []byte {
 	return b.prevhash
 }
 
-// Hash returns hash of the this block.
-func (b *Block) Hash() []byte {
+// DataHash returns hash of the this block's data.
+func (b *Block) DataHash() []byte {
 	return b.datahash
+}
+
+// HeaderHash returns hash of the this block's header.
+func (b *Block) HeaderHash() []byte {
+	return b.headerhash
 }
 
 // OrderersSignatures returns signatures of orderers, their cert, MSP ID and nonce.
@@ -307,4 +328,26 @@ func GetTx(block *common.Block, txNumber int) *Tx {
 	}
 
 	return &Tx{Data: block.Data.Data[txNumber], validationCode: validationCode, validationStatus: validationStatus}
+}
+
+type asn1Header struct {
+	Number       *big.Int
+	PreviousHash []byte
+	DataHash     []byte
+}
+
+func BlockHeaderBytes(b *common.BlockHeader) []byte {
+	asn1Header := asn1Header{
+		PreviousHash: b.PreviousHash,
+		DataHash:     b.DataHash,
+		Number:       new(big.Int).SetUint64(b.Number),
+	}
+	result, err := asn1.Marshal(asn1Header)
+	if err != nil {
+		// Errors should only arise for types which cannot be encoded, since the
+		// BlockHeader type is known a-priori to contain only encodable types, an
+		// error here is fatal and should not be propogated
+		panic(err)
+	}
+	return result
 }
