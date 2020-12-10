@@ -112,7 +112,9 @@ func FromFabricBlock(block *common.Block) (*Block, error) {
 	}, nil
 }
 
-// CheckIntegrity compares current block header hash with previous block header hash.
+// CheckIntegrity checks that two blocks are 'connected'.
+// This func compares current block header 'PreviousHash' (hash of block number, data and PreviousHash - think of it as a link to the previous block)
+// with actual previous block header hash.
 func CheckIntegrity(previousblock, currentblock *Block) bool {
 	return bytes.Equal(previousblock.headerhash, currentblock.prevhash)
 }
