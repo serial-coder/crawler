@@ -22,6 +22,9 @@ var (
 	invalidtx      Tx
 	configtx       Tx
 	configUpdateTx Tx
+	block1         *Block
+	block2         *Block
+	block3         *Block
 )
 
 func TestMain(m *testing.M) {
@@ -49,6 +52,19 @@ func TestMain(m *testing.M) {
 	}
 	configUpdateTx = confUpdTxs[0]
 
+	block1, err = getBlocklibBlock("./mock/forIntegrityCheck.pb")
+	if err != nil {
+		log.Error(err)
+	}
+	block2, err = getBlocklibBlock("./mock/configUpdate.pb")
+	if err != nil {
+		log.Error(err)
+	}
+	block3, err = getBlocklibBlock("./mock/mvcc_read_conflict.pb")
+	if err != nil {
+		log.Error(err)
+	}
+
 	m.Run()
 }
 
@@ -73,6 +89,21 @@ func readTxsFromBlock(pathToBlock string) ([]Tx, error) {
 	return txs, err
 }
 
+func getBlocklibBlock(pathToBlock string) (*Block, error) {
+	file, err := ioutil.ReadFile(pathToBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	fabBlock := &common.Block{}
+	err = proto.Unmarshal(file, fabBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	return FromFabricBlock(fabBlock)
+}
+
 func readConfigBlock(pathToBlock string) ([]Tx, error) {
 	file, err := ioutil.ReadFile(pathToBlock)
 	if err != nil {
@@ -92,6 +123,15 @@ func readConfigBlock(pathToBlock string) ([]Tx, error) {
 
 	txs, err := block.Txs()
 	return txs, err
+}
+
+func TestCheckIntegrity(t *testing.T) {
+	t.Run("check valid", func(t *testing.T) {
+		assert.Equal(t, true, CheckIntegrity(block1, block2))
+	})
+	t.Run("check invalid", func(t *testing.T) {
+		assert.Equal(t, false, CheckIntegrity(block1, block3))
+	})
 }
 
 func TestIsValid(t *testing.T) {
