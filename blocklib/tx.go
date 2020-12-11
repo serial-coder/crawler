@@ -48,6 +48,30 @@ func (tx *Tx) Envelope() (*common.Envelope, error) {
 	return envelope, nil
 }
 
+// ConfigUpdate extracts configuration transaction info from raw transaction.
+func (tx *Tx) ConfigUpdate() (*common.ConfigUpdate, error) {
+	env, err := tx.ConfigEnvelope()
+	if err != nil {
+		return nil, err
+	}
+	payload := &common.Payload{}
+	if err := proto.Unmarshal(env.LastUpdate.Payload, payload); err != nil {
+		return nil, err
+	}
+
+	updateEnv := &common.ConfigUpdateEnvelope{}
+	if err := proto.Unmarshal(payload.Data, updateEnv); err != nil {
+		return nil, err
+	}
+
+	update := &common.ConfigUpdate{}
+	if err := proto.Unmarshal(updateEnv.ConfigUpdate, update); err != nil {
+		return nil, err
+	}
+
+	return update, nil
+}
+
 // ConfigEnvelope returns pointer to common.ConfigEnvelope.
 // common.Envelope contains config and last update payload.
 func (tx *Tx) ConfigEnvelope() (*common.ConfigEnvelope, error) {

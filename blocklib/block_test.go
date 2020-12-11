@@ -120,10 +120,18 @@ func TestPreviousHash(t *testing.T) {
 	assert.Equal(t, "3cc69f358eacc13a378045bbfe5c516059a8969b3a77d6b80ed67c786d47e5ad", hex.EncodeToString(prevhash))
 }
 
-func TestHash(t *testing.T) {
+func TestDataHash(t *testing.T) {
 	fabBlock, err := getBlock("./mock/sampleblock.pb")
 	assert.NoError(t, err)
 	block, err := FromFabricBlock(fabBlock)
-	hash := block.Hash()
+	hash := block.DataHash()
 	assert.Equal(t, "db7a04bfca3b18b7cc6f6544863bec7f6b8d863bf8488bd92e25c71ffe04769b", hex.EncodeToString(hash))
+}
+
+func TestHeaderHash(t *testing.T) {
+	fabBlock, err := getBlock("./mock/sampleblock.pb")
+	assert.NoError(t, err)
+	block, err := FromFabricBlock(fabBlock)
+	hash := block.HeaderHash()
+	assert.Equal(t, "1652fcac96482da896909760e3df4758195fcad4672a54123e586c9a26afde0e", hex.EncodeToString(hash))
 }

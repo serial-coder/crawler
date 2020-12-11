@@ -18,9 +18,13 @@ import (
 )
 
 var (
-	tx        Tx
-	invalidtx Tx
-	configtx  Tx
+	tx             Tx
+	invalidtx      Tx
+	configtx       Tx
+	configUpdateTx Tx
+	block1         *Block
+	block2         *Block
+	block3         *Block
 )
 
 func TestMain(m *testing.M) {
@@ -41,6 +45,25 @@ func TestMain(m *testing.M) {
 		log.Error(err)
 	}
 	configtx = conftxs[0]
+
+	confUpdTxs, err := readTxsFromBlock("./mock/configUpdate.pb")
+	if err != nil {
+		log.Error(err)
+	}
+	configUpdateTx = confUpdTxs[0]
+
+	block1, err = getBlocklibBlock("./mock/forIntegrityCheck.pb")
+	if err != nil {
+		log.Error(err)
+	}
+	block2, err = getBlocklibBlock("./mock/configUpdate.pb")
+	if err != nil {
+		log.Error(err)
+	}
+	block3, err = getBlocklibBlock("./mock/mvcc_read_conflict.pb")
+	if err != nil {
+		log.Error(err)
+	}
 
 	m.Run()
 }
@@ -66,6 +89,21 @@ func readTxsFromBlock(pathToBlock string) ([]Tx, error) {
 	return txs, err
 }
 
+func getBlocklibBlock(pathToBlock string) (*Block, error) {
+	file, err := ioutil.ReadFile(pathToBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	fabBlock := &common.Block{}
+	err = proto.Unmarshal(file, fabBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	return FromFabricBlock(fabBlock)
+}
+
 func readConfigBlock(pathToBlock string) ([]Tx, error) {
 	file, err := ioutil.ReadFile(pathToBlock)
 	if err != nil {
@@ -85,6 +123,15 @@ func readConfigBlock(pathToBlock string) ([]Tx, error) {
 
 	txs, err := block.Txs()
 	return txs, err
+}
+
+func TestCheckIntegrity(t *testing.T) {
+	t.Run("check valid", func(t *testing.T) {
+		assert.Equal(t, true, CheckIntegrity(block1, block2))
+	})
+	t.Run("check invalid", func(t *testing.T) {
+		assert.Equal(t, false, CheckIntegrity(block1, block3))
+	})
 }
 
 func TestIsValid(t *testing.T) {
@@ -203,6 +250,14 @@ func TestActions(t *testing.T) {
 		assert.Equal(t, "3b2106648e7b0773db03d160dbfef48a514f0871f8e18524a10a2de19fb21dd9", hex.EncodeToString(creatorHash.Sum(nil)))
 		assert.Equal(t, uint64(2779780183085072792), binary.BigEndian.Uint64(action.SignatureHeader.Nonce))
 	}
+}
+
+func TestConfigUpdate(t *testing.T) {
+	update, err := configUpdateTx.ConfigUpdate()
+	assert.NoError(t, err)
+	assert.Equal(t, "mychannel", update.ChannelId)
+	assert.Equal(t, "0a1b0a1670656572302e6f7267322e6578616d706c652e636f6d10db46", hex.EncodeToString(update.WriteSet.Groups["Application"].Groups["Org2MSP"].Values["AnchorPeers"].Value))
+
 }
 
 func TestConfigEnvelope(t *testing.T) {
