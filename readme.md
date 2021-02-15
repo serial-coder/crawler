@@ -1,8 +1,8 @@
 ![](https://github.com/newity/crawler/workflows/unit-tests/badge.svg)
 
-Crawler docs: https://godoc.org/github.com/newity/crawler
+Crawler docs: https://pkg.go.dev/github.com/newity/crawler
 
-Blocklib docs: https://godoc.org/github.com/newity/crawler/blocklib
+Blocklib docs: https://pkg.go.dev/github.com/newity/crawler/blocklib
 
 **Crawler** is a framework for parsing Hyperledger Fabric blockchain. You can implement any storage, parser or storage adapter or use default implementations. 
 
@@ -53,3 +53,19 @@ Examples:
 - NATS Streaming usage as Crawler storage: https://github.com/newity/crawler/tree/master/examples/nats
 - Blocklib basic usage example: https://github.com/newity/crawler/tree/master/examples/blocklib
 - Blocklib usage for getting chaincode events: https://github.com/newity/crawler/tree/master/examples/blocklib-events
+
+<br>
+
+### FAQ
+
+_**We have already a database behind fabric peer, thus we can see BadgeDB as a cache storage, is it?**_
+
+BadgerDB used by Crawler as just a storage for parsed info. Depending on the implementation of the parser, the data in the Crawler's storage may differ more or less from the data in peer's LevelDB. By the way, at the moment there are storage implementations available not only for BadgerDB, but also for NATS and Google Pub/Sub.
+
+**_I guess this project is based on block replay support powered by ChannelEventHub. Is it?_**
+
+Yes. More precisely, the implementation of this interface in the go sdk is used: https://pkg.go.dev/github.com/hyperledger/fabric-sdk-go@v1.0.0/pkg/common/providers/fab#EventService
+
+**_What will be project target user? What interests a developer to use this than to use fabric-sdk-go?_**
+
+This project helps any developer who needs to collect data from the blockchain to get rid of the need to write boilerplate code. Crawler offers simple abstractions (and default implementations of each) to cover any need for collecting data from the blockchain. I tried to make the tool as simple as possible and will stick to this principle in the future.
